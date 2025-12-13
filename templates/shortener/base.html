@@ -1,0 +1,31 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZLink - URL Shortener Tool</title>
+    <link rel="stylesheet" href="{% static 'shortener/css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        {% if user.is_authenticated %}
+        <nav class="main-nav">
+            <a href="{% url 'dashboard' %}"
+                class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Links</a>
+            {% if request.user.is_superuser %}
+            <a href="{% url 'user_list' %}" class="nav-link {% if section == 'users' %}active{% endif %}">Users</a>
+            <a href="{% url 'cache_overview' %}" class="nav-link {% if section == 'cache' %}active{% endif %}">Cache</a>
+            {% endif %}
+            <a href="{% url 'logout' %}" class="nav-link logout">Logout</a>
+        </nav>
+        {% endif %}
+        {% block content %}
+        {% endblock %}
+    </div>
+</body>
+
+</html>

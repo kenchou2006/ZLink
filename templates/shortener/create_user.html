@@ -1,0 +1,47 @@
+{% extends 'shortener/base.html' %}
+
+{% block content %}
+<div class="login-container">
+    <div class="card login-card" style="max-width: 500px;">
+        <h1 style="font-size: 2rem;">Create User</h1>
+        <p>Add a new admin user</p>
+
+        <form method="POST" class="login-form">
+            {% csrf_token %}
+
+            {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                <div class="alert {{ message.tags }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label
+                    style="color: var(--text-muted); display: block; text-align: left; margin-bottom: 5px;">Username</label>
+                <input type="text" name="username" required class="login-input">
+            </div>
+
+            <div class="form-group">
+                <label
+                    style="color: var(--text-muted); display: block; text-align: left; margin-bottom: 5px;">Password</label>
+                <input type="password" name="password" required class="login-input">
+            </div>
+
+            <div class="form-group">
+                <label style="color: var(--text-muted); display: block; text-align: left; margin-bottom: 5px;">Confirm
+                    Password</label>
+                <input type="password" name="confirm_password" required class="login-input">
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <a href="{% url 'user_list' %}" class="login-btn cancel-btn">Cancel</a>
+                <button type="submit" class="login-btn">Create User</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends 'shortener/base.html' %}
+
+{% block content %}
+<div class="login-container">
+    <div class="card login-card" style="max-width: 500px;">
+        <h1 style="font-size: 2rem;">Edit User</h1>
+        <p>Update credentials for {{ target_user.username }}</p>
+
+        <form method="POST" class="login-form">
+            {% csrf_token %}
+
+            {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                <div class="alert {{ message.tags }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label
+                    style="color: var(--text-muted); display: block; text-align: left; margin-bottom: 5px;">Username</label>
+                <input type="text" name="username" value="{{ target_user.username }}" required class="login-input">
+            </div>
+
+            <div class="form-group">
+                <label style="color: var(--text-muted); display: block; text-align: left; margin-bottom: 5px;">New
+                    Password (Optional)</label>
+                <input type="password" name="password" placeholder="Leave blank to keep unchanged" class="login-input">
+            </div>
+
+            <div class="form-group">
+                <label style="color: var(--text-muted); display: block; text-align: left; margin-bottom: 5px;">Confirm
+                    New Password</label>
+                <input type="password" name="confirm_password" placeholder="Confirm new password" class="login-input">
+            </div>
+
+            {% if request.user.is_superuser and target_user != request.user %}
+            <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                <input type="checkbox" name="is_superuser" id="is_superuser" {% if target_user.is_superuser %}checked{% endif %} style="width: 20px; height: 20px; accent-color: var(--primary);">
+                <label for="is_superuser" style="color: var(--text); cursor: pointer;">Grant Superuser Status</label>
+            </div>
+            {% endif %}
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <a href="{% url 'user_list' %}" class="login-btn cancel-btn">Cancel</a>
+                <button type="submit" class="login-btn">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
