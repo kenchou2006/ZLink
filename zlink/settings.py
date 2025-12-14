@@ -28,8 +28,9 @@ SECRET_KEY = os.environ['SECRET_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
+ALLOWED_HOSTS = [h.strip() for h in os.getenv('ALLOWED_HOSTS', '*').split(',') if h.strip()]
 
+CSRF_TRUSTED_ORIGINS = [f'{scheme}://{host}' for host in ALLOWED_HOSTS if host not in ['*', 'localhost', '127.0.0.1'] for scheme in ['https', 'http']]
 
 # Application definition
 
@@ -76,19 +77,27 @@ WSGI_APPLICATION = 'zlink.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('POSTGRES_DATABASE', 'verceldb'),
-        'USER': os.getenv('POSTGRES_USER', 'default'),
-        'PASSWORD': os.environ['POSTGRES_PASSWORD'],
-        'HOST': os.environ['POSTGRES_HOST'],
-        'PORT': os.getenv('DB_PORT', 5432),
-        'OPTIONS': {
-            'sslmode': 'require',
+if os.environ.get('POSTGRES_HOST'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('POSTGRES_DATABASE', 'neondb'),
+            'USER': os.getenv('POSTGRES_USER', 'neondb_owner'),
+            'PASSWORD': os.environ['POSTGRES_PASSWORD'],
+            'HOST': os.environ['POSTGRES_HOST'],
+            'PORT': os.getenv('DB_PORT', 5432),
+            'OPTIONS': {
+                'sslmode': 'require',
+            }
         }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # Redis Cache
 # https://docs.djangoproject.com/en/6.0/topics/cache/

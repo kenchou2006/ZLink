@@ -12,6 +12,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from .utils import link_cache_key
 from .models import Link
 from zlink.settings import CACHE_TTL
+from .ga4 import send_ga4_event
 import time
 
 def admin_required(view_func):
@@ -20,6 +21,14 @@ def admin_required(view_func):
         login_url='login'
     )(view_func)
 
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
 def resolve_short_code(request, short_code):
     key = link_cache_key(short_code)
     try:
@@ -27,18 +36,51 @@ def resolve_short_code(request, short_code):
     except Exception:
         cached_data = None
         
+    client_ip = get_client_ip(request)
+    user_agent = request.META.get('HTTP_USER_AGENT', '')
+    
     if cached_data:
         try:
             cache.touch(key, CACHE_TTL)
         except Exception:
             pass
             
-        if isinstance(cached_data, dict):
-             return redirect(cached_data['url'])
-        return redirect(cached_data)
+        target_url = cached_data['url'] if isinstance(cached_data, dict) else cached_data
+        
+        # GA4 Tracking
+        current_scheme = request.scheme
+        current_host = request.get_host()
+        full_short_url = f"{current_scheme}://{current_host}/{short_code}"
+        
+        send_ga4_event(
+            request, 
+            params={
+                'page_title': target_url, # Use original URL as page title
+                'page_location': full_short_url
+            },
+            ip_address=client_ip,
+            user_agent=user_agent
+        )
+        
+        return redirect(target_url)
 
     link = get_object_or_404(Link, short_code=short_code)
     
+    # GA4 Tracking for non-cached hit
+    current_scheme = request.scheme
+    current_host = request.get_host()
+    full_short_url = f"{current_scheme}://{current_host}/{short_code}"
+    
+    send_ga4_event(
+        request, 
+        params={
+            'page_title': link.original_url, # Use original URL as page title
+            'page_location': full_short_url
+        },
+        ip_address=client_ip,
+        user_agent=user_agent
+    )
+
     try:
         cache.set(
             key,
