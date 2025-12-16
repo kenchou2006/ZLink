@@ -39,15 +39,41 @@
 
             {% if request.user.is_superuser and target_user != request.user %}
             <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
-                <input type="checkbox" name="is_superuser" id="is_superuser" {% if target_user.is_superuser %}checked{% endif %} style="width: 20px; height: 20px; accent-color: var(--primary);">
+                {% if target_user.is_superuser %}
+                <input type="checkbox" name="is_superuser" id="is_superuser" checked
+                    style="width: 20px; height: 20px; accent-color: var(--primary);">
+                {% else %}
+                <input type="checkbox" name="is_superuser" id="is_superuser"
+                    style="width: 20px; height: 20px; accent-color: var(--primary);">
+                {% endif %}
                 <label for="is_superuser" style="color: var(--text); cursor: pointer;">Grant Superuser Status</label>
             </div>
             {% endif %}
 
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <a href="{% url 'user_list' %}" class="login-btn cancel-btn">Cancel</a>
-                <button type="submit" class="login-btn">Save Changes</button>
+            <div style="margin-bottom: 20px; text-align: left;">
+                <label style="color: var(--text-muted); display: block; margin-bottom: 8px;">Date Joined</label>
+                <div class="login-input"
+                    style="background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); color: var(--text-muted); cursor: default;">
+                    {{ target_user.date_joined|date:"F j, Y, g:i a" }}
+                </div>
             </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button type="submit" name="action" value="update" class="login-btn">Save Changes</button>
+                <a href="{% url 'user_list' %}" class="login-btn cancel-btn"
+                    style="text-align: center; text-decoration: none;">Cancel</a>
+            </div>
+
+            {% if request.user.is_superuser and target_user != request.user %}
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                <button type="submit" name="action" value="delete" class="delete-btn"
+                    style="width: 100%; justify-content: center; padding: 12px; border: 1px solid rgba(239, 68, 68, 0.2);"
+                    onclick="return confirm('Are you sure you want to delete this user? This action cannot be undone.');">
+                    Delete User
+                </button>
+            </div>
+            {% endif %}
+
         </form>
     </div>
 </div>

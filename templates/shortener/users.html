@@ -31,7 +31,6 @@
             <thead>
                 <tr>
                     <th>Username</th>
-                    <th>Date Joined</th>
                     <th>Status</th>
                     <th>Action</th>
                 </tr>
@@ -50,7 +49,6 @@
                         <span class="badge-superuser">Superuser</span>
                         {% endif %}
                     </td>
-                    <td>{{ user.date_joined|date:"M d, Y" }}</td>
                     <td>
                         {% if request.user.is_superuser and not user.is_superuser and user != request.user %}
                         <form action="{% url 'toggle_user_active' user.id %}" method="POST" style="display:inline;">

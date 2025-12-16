@@ -197,7 +197,7 @@ def redirect_to_original(request, short_code):
 @admin_required
 def dashboard(request):
     links = Link.objects.all().order_by('-created_at')
-    return render(request, 'shortener/dashboard.html', {'links': links, 'section': 'links'})
+    return render(request, 'shortener/links.html', {'links': links, 'section': 'links'})
 
 
 @admin_required
@@ -324,6 +324,21 @@ def edit_user(request, user_id):
         return redirect('user_list')
     
     if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'delete':
+            if user_to_edit == request.user:
+                messages.error(request, "You cannot delete yourself.")
+                return render(request, 'shortener/edit_user.html', {'target_user': user_to_edit})
+            if user_to_edit.is_superuser and not request.user.is_superuser:
+                messages.error(request, "You do not have permission to delete superusers.")
+                return render(request, 'shortener/edit_user.html', {'target_user': user_to_edit})
+            
+            username = user_to_edit.username
+            user_to_edit.delete()
+            messages.success(request, f"User {username} deleted.")
+            return redirect('user_list')
+
         username = request.POST.get('username')
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
@@ -350,3 +365,79 @@ def edit_user(request, user_id):
         return redirect('user_list')
         
     return render(request, 'shortener/edit_user.html', {'target_user': user_to_edit})
+
+@admin_required
+def edit_link(request, link_id):
+    link = get_object_or_404(Link, id=link_id)
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        original_short_code = link.short_code # Capture old code for cache deletion
+        
+        if action == 'delete':
+            # Delete cache for the link being deleted
+            try:
+                cache_key = link_cache_key(original_short_code)
+                cache.delete(cache_key)
+            except Exception:
+                pass
+                
+            link.delete()
+            messages.success(request, "Link deleted.")
+            return redirect('dashboard')
+            
+        new_short_code = request.POST.get('custom_alias', '').strip()
+        new_original_url = request.POST.get('original_url', '').strip()
+
+        if new_original_url:
+            link.original_url = new_original_url
+
+        if new_short_code and new_short_code != link.short_code:
+            # Validation logic (similar to create_link)
+            if new_short_code == '/' or new_short_code == '@root':
+                new_short_code = '@root'
+            
+            reserved_aliases = ['links', 'login', 'create', 'delete', 'users', 'logout', 'admin', 'static', 'cache']
+            if new_short_code.lower() in reserved_aliases:
+                messages.error(request, f"Alias '{new_short_code}' is reserved.")
+                return render(request, 'shortener/edit_link.html', {'link': link})
+
+            if new_short_code.lower().startswith('users/') or new_short_code.lower().startswith('delete/') or new_short_code.lower().startswith('cache/') or new_short_code.lower().startswith('links/'):
+                 messages.error(request, f"Alias '{new_short_code}' is reserved.")
+                 return render(request, 'shortener/edit_link.html', {'link': link})
+
+            if new_short_code != '@root':
+                try:
+                    resolved_match = resolve(f"/{new_short_code}/")
+                    if resolved_match.url_name != 'redirect_to_original':
+                         # If it resolves to something other than the redirect view, it's a conflict
+                         messages.error(request, f"Alias '{new_short_code}' conflicts with a system URL.")
+                         return render(request, 'shortener/edit_link.html', {'link': link})
+                except Resolver404:
+                    pass
+
+            if Link.objects.filter(short_code=new_short_code).exclude(id=link.id).exists():
+                messages.error(request, f"Alias '{new_short_code}' is already taken.")
+                return render(request, 'shortener/edit_link.html', {'link': link})
+            
+            link.short_code = new_short_code
+
+        try:
+            link.save()
+            
+            # Invalidate cache for the OLD short code (if changed) or even if same (in case URL changed)
+            try:
+                cache_key = link_cache_key(original_short_code)
+                cache.delete(cache_key)
+                # If short code changed, ensure the new one is also clear (improbable but safe)
+                if original_short_code != link.short_code:
+                     cache.delete(link_cache_key(link.short_code))
+            except Exception:
+                pass
+                
+            messages.success(request, "Link updated successfully.")
+            return redirect('dashboard')
+        except Exception as e:
+            messages.error(request, f"Error updating link: {e}")
+
+    return render(request, 'shortener/edit_link.html', {'link': link})

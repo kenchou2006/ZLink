@@ -38,9 +38,10 @@
             <tbody>
                 {% for item in keys %}
                 <tr>
-                    <td style="font-family: monospace;"><code
-                            class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-sm"
-                            title="{{ item.key }}">{{ item.display_key }}</code></td>
+                    <td style="font-family: monospace;">
+                        <code class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-sm"
+                            title="{{ item.key }}">{{ item.display_key }}</code>
+                    </td>
                     <td>{{ item.type }}</td>
                     <td>{{ item.ttl }}</td>
                     <td>

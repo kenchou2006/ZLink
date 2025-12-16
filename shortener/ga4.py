@@ -57,6 +57,9 @@ def send_ga4_event(request, event_name='page_view', params=None, ip_address=None
     """
     Sends an event to GA4 asynchronously.
     """
+    if not GA_MEASUREMENT_ID or not GA_API_SECRET:
+        return
+
     if params is None:
         params = {}
 

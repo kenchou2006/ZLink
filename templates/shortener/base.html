@@ -8,9 +8,13 @@
     <title>ZLink - URL Shortener Tool</title>
     <link rel="stylesheet" href="{% static 'shortener/css/style.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8"
+        integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC"
+        crossorigin="anonymous"></script>
 </head>
 
-<body>
+<body hx-boost="true">
+    <div class="htmx-indicator"></div>
     <div class="container">
         {% if user.is_authenticated %}
         <nav class="main-nav">
