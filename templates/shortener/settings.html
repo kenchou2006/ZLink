@@ -1,0 +1,134 @@
+{% extends 'shortener/base.html' %}
+{% load static %}
+
+{% block title %}{% block settings_title %}Settings{% endblock %} - ZLink{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="header">
+        <h1>Settings</h1>
+        <p>Manage your application settings and configurations</p>
+    </div>
+
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert {{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Settings Layout with Sidebar -->
+    <div class="settings-layout">
+        <!-- Left Sidebar Navigation -->
+        <aside class="settings-sidebar">
+            <nav class="settings-nav">
+                <a href="{% url 'settings_profile' %}" class="settings-nav-item {% block profile_active %}{% endblock %}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <div class="settings-nav-content">
+                        <span class="settings-nav-title">Profile</span>
+                        <span class="settings-nav-desc">Your account settings</span>
+                    </div>
+                </a>
+                {% if request.user.is_superuser %}
+                <a href="{% url 'settings_users' %}" class="settings-nav-item {% block users_active %}{% endblock %}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <div class="settings-nav-content">
+                        <span class="settings-nav-title">User</span>
+                        <span class="settings-nav-desc">Manage users & permissions</span>
+                    </div>
+                </a>
+                <a href="{% url 'settings_cache' %}" class="settings-nav-item {% block cache_active %}{% endblock %}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                        <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                        <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                        <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                    </svg>
+                    <div class="settings-nav-content">
+                        <span class="settings-nav-title">Cache</span>
+                        <span class="settings-nav-desc">Monitor Redis cache</span>
+                    </div>
+                </a>
+                {% endif %}
+            </nav>
+        </aside>
+
+        <!-- Right Content Area -->
+        <main class="settings-content">
+            {% block settings_content %}
+            <!-- Default content: Settings selection cards -->
+            <div class="settings-panel active">
+                <div style="max-width: 600px; margin: 0 auto;">
+                    <div class="stats-grid" style="grid-template-columns: 1fr;">
+                        <a href="{% url 'settings_profile' %}" style="text-decoration: none;">
+                            <div class="stat-card" style="cursor: pointer; transition: all var(--transition-base);" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+                                <div style="display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-md);">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent);">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                    <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--text-primary);">My Profile</h3>
+                                </div>
+                                <p style="color: var(--text-tertiary); font-size: 0.875rem; margin: 0;">
+                                    Update your account information and change password
+                                </p>
+                            </div>
+                        </a>
+
+                        {% if request.user.is_superuser %}
+                        <a href="{% url 'settings_users' %}" style="text-decoration: none;">
+                            <div class="stat-card" style="cursor: pointer; transition: all var(--transition-base); margin-top: var(--space-lg);" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+                                <div style="display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-md);">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary-light);">
+                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="9" cy="7" r="4"></circle>
+                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                    </svg>
+                                    <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--text-primary);">User Management</h3>
+                                </div>
+                                <p style="color: var(--text-tertiary); font-size: 0.875rem; margin: 0;">
+                                    Manage administrator accounts, permissions, and user settings
+                                </p>
+                            </div>
+                        </a>
+
+                        <a href="{% url 'settings_cache' %}" style="text-decoration: none;">
+                            <div class="stat-card" style="cursor: pointer; transition: all var(--transition-base); margin-top: var(--space-lg);" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+                                <div style="display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-md);">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--secondary-light);">
+                                        <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                                        <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                                        <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                                        <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                                    </svg>
+                                    <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--text-primary);">Cache Management</h3>
+                                </div>
+                                <p style="color: var(--text-tertiary); font-size: 0.875rem; margin: 0;">
+                                    Monitor and manage Redis cache entries for optimal performance
+                                </p>
+                            </div>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endblock %}
+        </main>
+    </div>
+</div>
+
+{% block settings_scripts %}{% endblock %}
+{% endblock %}
+

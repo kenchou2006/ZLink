@@ -1,47 +1,107 @@
 {% extends 'shortener/base.html' %}
 
+{% block title %}Create User - ZLink{% endblock %}
+
 {% block content %}
-<div class="login-container">
-    <div class="card login-card" style="max-width: 500px;">
-        <h1 style="font-size: 2rem;">Create User</h1>
-        <p>Add a new admin user</p>
+<div class="dashboard-container">
+    <div class="settings-form-container">
+        <div class="settings-form-header">
+            <div class="settings-form-header-content">
+                <a href="{% url 'settings_users' %}" class="back-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    Back to Users
+                </a>
+                <h1>Create New User</h1>
+                <p>Add a new administrator account to the system</p>
+            </div>
+        </div>
 
-        <form method="POST" class="login-form">
-            {% csrf_token %}
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert {{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
 
-            {% if messages %}
-            <div class="messages">
-                {% for message in messages %}
-                <div class="alert {{ message.tags }}">
-                    {{ message }}
+        <div class="settings-form-card">
+            <form method="POST" class="settings-form">
+                {% csrf_token %}
+
+                <div class="form-section">
+                    <h3 class="form-section-title">Account Information</h3>
+
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text"
+                               id="username"
+                               name="username"
+                               required
+                               class="form-input"
+                               placeholder="Enter username"
+                               autocomplete="off"
+                               autofocus>
+                        <p class="form-help">This will be used to log in to the system</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email"
+                               id="email"
+                               name="email"
+                               class="form-input"
+                               placeholder="user@example.com"
+                               autocomplete="email">
+                        <p class="form-help">Optional</p>
+                    </div>
                 </div>
-                {% endfor %}
-            </div>
-            {% endif %}
 
-            <div class="form-group">
-                <label
-                    style="color: var(--text-muted); display: block; text-align: left; margin-bottom: 5px;">Username</label>
-                <input type="text" name="username" required class="login-input">
-            </div>
+                <div class="form-section">
+                    <h3 class="form-section-title">Security</h3>
 
-            <div class="form-group">
-                <label
-                    style="color: var(--text-muted); display: block; text-align: left; margin-bottom: 5px;">Password</label>
-                <input type="password" name="password" required class="login-input">
-            </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password"
+                               id="password"
+                               name="password"
+                               required
+                               class="form-input"
+                               placeholder="Create a strong password"
+                               autocomplete="new-password">
+                        <p class="form-help">Use at least 8 characters with mixed case and numbers</p>
+                    </div>
 
-            <div class="form-group">
-                <label style="color: var(--text-muted); display: block; text-align: left; margin-bottom: 5px;">Confirm
-                    Password</label>
-                <input type="password" name="confirm_password" required class="login-input">
-            </div>
+                    <div class="form-group">
+                        <label for="confirm_password">Confirm Password</label>
+                        <input type="password"
+                               id="confirm_password"
+                               name="confirm_password"
+                               required
+                               class="form-input"
+                               placeholder="Re-enter password"
+                               autocomplete="new-password">
+                    </div>
+                </div>
 
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <a href="{% url 'user_list' %}" class="login-btn cancel-btn">Cancel</a>
-                <button type="submit" class="login-btn">Create User</button>
-            </div>
-        </form>
+                <div class="form-actions">
+                    <a href="{% url 'settings_users' %}" class="btn cancel-btn">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn primary-action-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        Create User
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 {% endblock %}
+

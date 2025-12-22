@@ -1,0 +1,117 @@
+{% extends 'shortener/settings.html' %}
+{% load static %}
+
+{% block settings_title %}My Profile{% endblock %}
+{% block profile_active %}active{% endblock %}
+
+{% block settings_content %}
+<!-- Profile Panel -->
+<div id="profile-panel" class="settings-panel active">
+    <div class="settings-panel-header">
+        <div>
+            <h2>My Profile</h2>
+            <p class="settings-description">Manage your account information and security settings</p>
+        </div>
+    </div>
+
+    <div class="settings-form-card">
+        <form method="POST" class="settings-form">
+            {% csrf_token %}
+
+            <div class="form-section">
+                <h3 class="form-section-title">Account Information</h3>
+
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text"
+                           id="username"
+                           name="username"
+                           value="{{ request.user.username }}"
+                           required
+                           class="form-input"
+                           autocomplete="username">
+                    <p class="form-help">Your unique username for login</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email"
+                           id="email"
+                           name="email"
+                           value="{{ request.user.email }}"
+                           class="form-input"
+                           placeholder="user@example.com"
+                           autocomplete="email">
+                    <p class="form-help">Optional</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="member_since">Member Since</label>
+                    <input type="text"
+                           id="member_since"
+                           value="{{ request.user.date_joined|date:'F j, Y • g:i A' }}"
+                           class="form-input"
+                           disabled
+                           style="cursor: not-allowed; opacity: 0.6;">
+                    <p class="form-help">Account creation date</p>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 class="form-section-title">Change Password</h3>
+                <p class="form-section-desc">Leave blank to keep your current password</p>
+
+                <div class="form-group">
+                    <label for="current_password">Current Password</label>
+                    <input type="password"
+                           id="current_password"
+                           name="current_password"
+                           placeholder="Enter current password"
+                           class="form-input"
+                           autocomplete="current-password">
+                    <p class="form-help">Required to change password</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="new_password">New Password</label>
+                    <input type="password"
+                           id="new_password"
+                           name="new_password"
+                           placeholder="Enter new password"
+                           class="form-input"
+                           autocomplete="new-password">
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm_password">Confirm New Password</label>
+                    <input type="password"
+                           id="confirm_password"
+                           name="confirm_password"
+                           placeholder="Re-enter new password"
+                           class="form-input"
+                           autocomplete="new-password">
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'dashboard' %}" class="btn cancel-btn">
+                    Cancel
+                </a>
+                <button type="submit" class="btn primary-action-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- End Profile Panel -->
+{% endblock %}
+
+{% block settings_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/blueimp-md5@2.19.0/js/md5.min.js"></script>
+<script src="{% static 'js/gravatar.js' %}"></script>
+{% endblock %}
+

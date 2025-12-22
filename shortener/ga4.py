@@ -10,7 +10,8 @@ GA_API_SECRET = os.environ.get('GA_API_SECRET')
 
 def _send_ga4_event_thread(client_id, event_name, params, ip_address=None, user_agent=None, user_data=None):
     if not GA_MEASUREMENT_ID or not GA_API_SECRET:
-        print(f"GA4 DEBUG: Missing credentials. MEASUREMENT_ID={GA_MEASUREMENT_ID}, API_SECRET={'Present' if GA_API_SECRET else 'Missing'}")
+        if settings.DEBUG:
+            print(f"GA4 DEBUG: Missing credentials. MEASUREMENT_ID={GA_MEASUREMENT_ID}, API_SECRET={'Present' if GA_API_SECRET else 'Missing'}")
         return
 
     url = f"https://www.google-analytics.com/mp/collect?measurement_id={GA_MEASUREMENT_ID}&api_secret={GA_API_SECRET}"
@@ -33,14 +34,15 @@ def _send_ga4_event_thread(client_id, event_name, params, ip_address=None, user_
     if user_data:
         payload["user_data"] = user_data
 
-    print(f"GA4 DEBUG: Sending event: {event_name}")
-    print(f"GA4 DEBUG: Payload: {payload}")
-    if ip_address:
-        print(f"GA4 DEBUG: IP Override: {ip_address}")
-    if user_agent:
-        print(f"GA4 DEBUG: User Agent: {user_agent}")
-    if user_data:
-        print(f"GA4 DEBUG: User Data: {user_data}")
+    if settings.DEBUG:
+        print(f"GA4 DEBUG: Sending event: {event_name}")
+        print(f"GA4 DEBUG: Payload: {payload}")
+        if ip_address:
+            print(f"GA4 DEBUG: IP Override: {ip_address}")
+        if user_agent:
+            print(f"GA4 DEBUG: User Agent: {user_agent}")
+        if user_data:
+            print(f"GA4 DEBUG: User Data: {user_data}")
 
     try:
         headers = {}
@@ -48,9 +50,11 @@ def _send_ga4_event_thread(client_id, event_name, params, ip_address=None, user_
             headers['User-Agent'] = user_agent
             
         response = requests.post(url, json=payload, headers=headers, timeout=5)
-        print(f"GA4 DEBUG: Response: {response.status_code} - {response.text}")
+        if settings.DEBUG:
+            print(f"GA4 DEBUG: Response: {response.status_code} - {response.text}")
     except Exception as e:
-        print(f"GA4 DEBUG: Exception: {e}")
+        if settings.DEBUG:
+            print(f"GA4 DEBUG: Exception: {e}")
 
 
 def send_ga4_event(request, event_name='page_view', params=None, ip_address=None, user_agent=None, user_data=None):
@@ -75,4 +79,3 @@ def send_ga4_event(request, event_name='page_view', params=None, ip_address=None
     )
     thread.daemon = True
     thread.start()
-

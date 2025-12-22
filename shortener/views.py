@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
-from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.decorators import user_passes_test, login_required
 from django.utils.http import url_has_allowed_host_and_scheme
 from .utils import link_cache_key
 from .models import Link
@@ -113,34 +113,6 @@ def login_view(request):
 
     return render(request, 'shortener/login.html', {'form': form})
 
-@admin_required
-def cache_overview(request):
-    if not request.user.is_superuser:
-        messages.error(request, "Access denied.")
-        return redirect('dashboard')
-    
-    try:
-        con = get_redis_connection("default")
-        keys = []
-        for key in con.scan_iter(match="*shortener:url:*"):
-            keys.append(key)
-
-        cache_data = []
-        for k in keys:
-            decoded_key = k.decode('utf-8')
-            ttl = con.ttl(k)
-            k_type = con.type(k).decode('utf-8')
-            if 'url:' in decoded_key:
-                 display_key = decoded_key.split('url:')[-1]
-            else:
-                 display_key = decoded_key
-            
-            cache_data.append({'key': decoded_key, 'display_key': display_key, 'ttl': ttl, 'type': k_type})
-        
-        return render(request, 'shortener/cache.html', {'keys': cache_data, 'section': 'cache'})
-    except Exception as e:
-        messages.error(request, f"Redis error or not connected: {e}")
-        return render(request, 'shortener/cache.html', {'keys': [], 'error': str(e), 'section': 'cache'})
 
 @admin_required
 def delete_cache_key(request):
@@ -156,7 +128,7 @@ def delete_cache_key(request):
                 messages.success(request, f"Key '{key}' deleted.")
             except Exception as e:
                 messages.error(request, f"Error deleting key: {e}")
-    return redirect('cache_overview')
+    return redirect('settings_cache')
 
 @admin_required
 def clear_all_cache(request):
@@ -172,7 +144,7 @@ def clear_all_cache(request):
             messages.success(request, "All 'shortener:url:*' cache keys cleared.")
         except Exception as e:
             messages.error(request, f"Error clearing cache: {e}")
-    return redirect('cache_overview')
+    return redirect('settings_cache')
 
 def root_redirect(request):
     try:
@@ -211,12 +183,12 @@ def create_link(request):
                 if custom_alias:
                     if custom_alias == '/' or custom_alias == '@root':
                         custom_alias = '@root'
-                    reserved_aliases = ['links', 'login', 'create', 'delete', 'users', 'logout', 'admin', 'static', 'cache']
+                    reserved_aliases = ['links', 'login', 'create', 'delete', 'settings', 'logout', 'admin', 'static', 'cache']
                     if custom_alias.lower() in reserved_aliases:
                         messages.error(request, f"Alias '{custom_alias}' is reserved and cannot be used.")
                         return redirect('dashboard')
 
-                    if custom_alias.lower().startswith('users/') or custom_alias.lower().startswith('delete/') or custom_alias.lower().startswith('cache/'):
+                    if custom_alias.lower().startswith('settings/') or custom_alias.lower().startswith('delete/'):
                          messages.error(request, f"Alias '{custom_alias}' is reserved and cannot be used.")
                          return redirect('dashboard')
 
@@ -242,20 +214,16 @@ def create_link(request):
 
     return redirect('dashboard')
 
-@admin_required
-def user_list(request):
-    users = list(User.objects.exclude(id=request.user.id).order_by('-date_joined'))
-    users.insert(0, request.user)
-    return render(request, 'shortener/users.html', {'users': users, 'section': 'users'})
 
 @admin_required
 def create_user(request):
     if not request.user.is_superuser:
         messages.error(request, "Only superusers can create new admin accounts.")
-        return redirect('user_list')
+        return redirect('settings_users')
 
     if request.method == 'POST':
         username = request.POST.get('username')
+        email = request.POST.get('email', '').strip()
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
 
@@ -264,15 +232,19 @@ def create_user(request):
                 messages.error(request, "Username already exists.")
                 return render(request, 'shortener/create_user.html')
 
+            if email and User.objects.filter(email=email).exists():
+                messages.error(request, "Email already exists.")
+                return render(request, 'shortener/create_user.html')
+
             if password != confirm_password:
                 messages.error(request, "Passwords do not match.")
                 return render(request, 'shortener/create_user.html')
 
-            user = User.objects.create_user(username=username, password=password)
-            user.is_staff = True 
+            user = User.objects.create_user(username=username, email=email, password=password)
+            user.is_staff = True
             user.save()
             messages.success(request, f"User {username} created.")
-            return redirect('user_list')
+            return redirect('settings_users')
 
     return render(request, 'shortener/create_user.html')
 
@@ -283,21 +255,21 @@ def delete_user(request, user_id):
 
         if user.is_superuser and not request.user.is_superuser:
             messages.error(request, "You do not have permission to delete superusers.")
-            return redirect('user_list')
+            return redirect('settings_users')
 
         if user == request.user:
             messages.error(request, "You cannot delete yourself.")
         else:
             user.delete()
             messages.success(request, "User deleted.")
-    return redirect('user_list')
+    return redirect('settings_users')
 
 @admin_required
 def toggle_user_active(request, user_id):
     if request.method == 'POST':
         if not request.user.is_superuser:
              messages.error(request, "Only superusers can change user status.")
-             return redirect('user_list')
+             return redirect('settings_users')
 
         user = get_object_or_404(User, id=user_id)
         if user == request.user:
@@ -309,7 +281,7 @@ def toggle_user_active(request, user_id):
             user.save()
             status = "activated" if user.is_active else "deactivated"
             messages.success(request, f"User {user.username} has been {status}.")
-    return redirect('user_list')
+    return redirect('settings_users')
 
 def logout_view(request):
     logout(request)
@@ -321,11 +293,26 @@ def edit_user(request, user_id):
     
     if user_to_edit.is_superuser and not request.user.is_superuser:
         messages.error(request, "You do not have permission to edit this user.")
-        return redirect('user_list')
-    
+        return redirect('settings_users')
+
     if request.method == 'POST':
         action = request.POST.get('action')
         
+        # Handle activate/deactivate actions
+        if action == 'activate':
+            if request.user.is_superuser and user_to_edit != request.user:
+                user_to_edit.is_active = True
+                user_to_edit.save()
+                messages.success(request, f"User {user_to_edit.username} has been activated.")
+                return redirect('edit_user', user_id=user_id)
+
+        if action == 'deactivate':
+            if request.user.is_superuser and user_to_edit != request.user:
+                user_to_edit.is_active = False
+                user_to_edit.save()
+                messages.success(request, f"User {user_to_edit.username} has been deactivated.")
+                return redirect('edit_user', user_id=user_id)
+
         if action == 'delete':
             if user_to_edit == request.user:
                 messages.error(request, "You cannot delete yourself.")
@@ -337,9 +324,11 @@ def edit_user(request, user_id):
             username = user_to_edit.username
             user_to_edit.delete()
             messages.success(request, f"User {username} deleted.")
-            return redirect('user_list')
+            return redirect('settings_users')
 
+        # Handle update action (default)
         username = request.POST.get('username')
+        email = request.POST.get('email', '').strip()
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
         
@@ -349,7 +338,14 @@ def edit_user(request, user_id):
                 return render(request, 'shortener/edit_user.html', {'target_user': user_to_edit})
             
             user_to_edit.username = username
-            
+
+        # Update email
+        if email != user_to_edit.email:
+            if email and User.objects.filter(email=email).exclude(id=user_id).exists():
+                messages.error(request, "Email already exists.")
+                return render(request, 'shortener/edit_user.html', {'target_user': user_to_edit})
+            user_to_edit.email = email
+
         if password and password.strip():
             if password != confirm_password:
                 messages.error(request, "Passwords do not match.")
@@ -362,8 +358,8 @@ def edit_user(request, user_id):
             
         user_to_edit.save()
         messages.success(request, f"User {user_to_edit.username} updated successfully.")
-        return redirect('user_list')
-        
+        return redirect('settings_users')
+
     return render(request, 'shortener/edit_user.html', {'target_user': user_to_edit})
 
 @admin_required
@@ -441,3 +437,119 @@ def edit_link(request, link_id):
             messages.error(request, f"Error updating link: {e}")
 
     return render(request, 'shortener/edit_link.html', {'link': link})
+
+@admin_required
+def settings_view(request):
+    # Redirect to profile by default
+    return redirect('settings_profile')
+
+@login_required
+def settings_profile(request):
+    """
+    View for user profile settings - accessible to all users
+    """
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        email = request.POST.get('email', '').strip()
+        current_password = request.POST.get('current_password', '').strip()
+        new_password = request.POST.get('new_password', '').strip()
+        confirm_password = request.POST.get('confirm_password', '').strip()
+
+        user = request.user
+
+        # Update username
+        if username and username != user.username:
+            if User.objects.filter(username=username).exclude(id=user.id).exists():
+                messages.error(request, "Username already exists.")
+                return render(request, 'shortener/settings_profile.html')
+            user.username = username
+
+        # Update email
+        if email != user.email:
+            if email and User.objects.filter(email=email).exclude(id=user.id).exists():
+                messages.error(request, "Email already exists.")
+                return render(request, 'shortener/settings_profile.html')
+            user.email = email
+
+        # Update password if provided
+        if new_password:
+            if not current_password:
+                messages.error(request, "Current password is required to change password.")
+                return render(request, 'shortener/settings_profile.html')
+
+            if not user.check_password(current_password):
+                messages.error(request, "Current password is incorrect.")
+                return render(request, 'shortener/settings_profile.html')
+
+            if new_password != confirm_password:
+                messages.error(request, "New passwords do not match.")
+                return render(request, 'shortener/settings_profile.html')
+
+            user.set_password(new_password)
+            messages.success(request, "Profile updated successfully. Please log in again with your new password.")
+            user.save()
+            logout(request)
+            return redirect('login')
+
+        user.save()
+        messages.success(request, "Profile updated successfully.")
+        return redirect('settings_profile')
+
+    return render(request, 'shortener/settings_profile.html', {
+        'section': 'settings'
+    })
+
+@admin_required
+def settings_users(request):
+    if not request.user.is_superuser:
+        messages.error(request, "Access denied.")
+        return redirect('dashboard')
+
+    # Get users data
+    users = list(User.objects.exclude(id=request.user.id).order_by('-date_joined'))
+    users.insert(0, request.user)
+
+    # Calculate user stats
+    active_count = sum(1 for u in users if u.is_active)
+    superuser_count = sum(1 for u in users if u.is_superuser)
+
+    return render(request, 'shortener/settings_users.html', {
+        'users': users,
+        'active_count': active_count,
+        'superuser_count': superuser_count,
+        'section': 'settings'
+    })
+
+@admin_required
+def settings_cache(request):
+    if not request.user.is_superuser:
+        messages.error(request, "Access denied.")
+        return redirect('dashboard')
+
+    # Get cache data
+    cache_data = []
+    error = None
+    try:
+        con = get_redis_connection("default")
+        keys = []
+        for key in con.scan_iter(match="*shortener:url:*"):
+            keys.append(key)
+
+        for k in keys:
+            decoded_key = k.decode('utf-8')
+            ttl = con.ttl(k)
+            k_type = con.type(k).decode('utf-8')
+            if 'url:' in decoded_key:
+                display_key = decoded_key.split('url:')[-1]
+            else:
+                display_key = decoded_key
+
+            cache_data.append({'key': decoded_key, 'display_key': display_key, 'ttl': ttl, 'type': k_type})
+    except Exception as e:
+        error = str(e)
+
+    return render(request, 'shortener/settings_cache.html', {
+        'keys': cache_data,
+        'error': error,
+        'section': 'settings'
+    })

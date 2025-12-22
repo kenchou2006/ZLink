@@ -1,48 +1,66 @@
 {% extends 'shortener/base.html' %}
 
+{% block title %}Edit Link - ZLink{% endblock %}
+
 {% block content %}
 <div class="login-container">
     <div class="login-card">
         <h1>Edit Link</h1>
-        <p>Modify link details or delete it.</p>
+        <p>Update your link details or remove it</p>
 
-        <form method="post" class="create-form" style="display: block;">
+        <form method="post">
             {% csrf_token %}
 
-            <div style="margin-bottom: 20px; text-align: left;">
-                <label style="color: var(--text-muted); display: block; margin-bottom: 8px;">Original URL</label>
-                <input type="url" name="original_url" value="{{ link.original_url }}" required class="login-input"
-                    style="margin-bottom: 0;">
+            <div class="form-group">
+                <label for="original_url">Original URL</label>
+                <input type="url"
+                       id="original_url"
+                       name="original_url"
+                       value="{{ link.original_url }}"
+                       required
+                       class="login-input">
             </div>
 
-            <div style="margin-bottom: 30px; text-align: left;">
-                <label style="color: var(--text-muted); display: block; margin-bottom: 8px;">Custom Alias</label>
-                <div
-                    style="display: flex; align-items: center; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 0 16px;">
-                    <span style="color: var(--text-muted); margin-right: 5px;">{{ request.get_host }}/</span>
-                    <input type="text" name="custom_alias" value="{{ link.short_code }}" class="login-input"
-                        style="border: none; background: transparent; padding-left: 0; margin-bottom: 0;">
+            <div class="form-group">
+                <label for="custom_alias">Short Code</label>
+                <div style="display: flex; align-items: center; background: var(--bg-elevated); border: 1px solid var(--border-default); border-radius: var(--radius-md); padding: 0.625rem var(--space-md); transition: all var(--transition-base);">
+                    <span style="color: var(--text-disabled); margin-right: var(--space-sm); font-weight: 500;">{{ request.get_host }}/</span>
+                    <input type="text"
+                           id="custom_alias"
+                           name="custom_alias"
+                           value="{{ link.short_code }}"
+                           pattern="[a-zA-Z0-9-_]+"
+                           title="Alphanumeric, dashes, or underscores only"
+                           style="border: none; background: transparent; padding: 0; margin: 0; color: var(--primary-light); font-weight: 600; font-family: 'SF Mono', 'Monaco', 'Courier New', monospace; outline: none; flex: 1; width: 100%;">
                 </div>
             </div>
 
-            <div style="margin-bottom: 20px; text-align: left;">
-                <label style="color: var(--text-muted); display: block; margin-bottom: 8px;">Created At</label>
-                <div class="login-input"
-                    style="background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); color: var(--text-muted); cursor: default;">
-                    {{ link.created_at|date:"F j, Y, g:i a" }}
-                </div>
+            <div class="form-group">
+                <label>Created At</label>
+                <input type="text"
+                       value="{{ link.created_at|date:'F j, Y • g:i A' }}"
+                       class="login-input"
+                       disabled
+                       style="cursor: not-allowed;">
             </div>
 
-            <div style="display: flex; gap: 10px;">
-                <button type="submit" name="action" value="update" class="login-btn">Save Changes</button>
-                <a href="{% url 'dashboard' %}" class="login-btn cancel-btn" style="text-align: center;">Cancel</a>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); margin-top: var(--space-xl);">
+                <button type="submit" name="action" value="update" class="login-btn">
+                    Save Changes
+                </button>
+                <a href="{% url 'dashboard' %}" class="btn cancel-btn">
+                    Cancel
+                </a>
             </div>
 
-            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
-                <button type="submit" name="action" value="delete" class="delete-btn"
-                    style="width: 100%; justify-content: center; padding: 12px;"
-                    onclick="return confirm('Are you sure you want to delete this link? This action cannot be undone.');">
-                    Delete Link
+            <div style="margin-top: var(--space-xl); padding-top: var(--space-xl); border-top: 1px solid var(--border-default);">
+                <button type="submit"
+                        name="action"
+                        value="delete"
+                        class="delete-btn"
+                        style="width: 100%;"
+                        onclick="return confirm('Are you sure you want to delete this link?\n\nThis action cannot be undone.');">
+                    Delete Link Permanently
                 </button>
             </div>
         </form>
