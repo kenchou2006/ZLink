@@ -18,41 +18,95 @@
         <form method="POST" class="settings-form">
             {% csrf_token %}
 
+            <div class="form-section"
+                style="display: flex; align-items: center; gap: var(--space-lg); margin-bottom: var(--space-xl);">
+                <div
+                    style="width: 120px; height: 120px; border-radius: 50%; overflow: hidden; background-color: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; border: 2px solid var(--border-color); font-size: 3rem;">
+                    <img class="user-avatar-img" data-avatar-url="{{ request.user.profile.avatar_url|default:'' }}"
+                        data-username="{{ request.user.username|slice:':1'|upper }}" alt="{{ request.user.username }}"
+                        style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.125rem; font-weight: 600;">Profile Picture</h3>
+                    <p style="margin: 4px 0 0; color: var(--text-tertiary); font-size: 0.875rem;">
+                        This will be displayed on your dashboard and user list.
+                    </p>
+                </div>
+            </div>
+
             <div class="form-section">
                 <h3 class="form-section-title">Account Information</h3>
 
                 <div class="form-group">
                     <label for="username">Username</label>
-                    <input type="text"
-                           id="username"
-                           name="username"
-                           value="{{ request.user.username }}"
-                           required
-                           class="form-input"
-                           autocomplete="username">
+                    <input type="text" id="username" name="username" value="{{ request.user.username }}" required
+                        class="form-input" autocomplete="username">
                     <p class="form-help">Your unique username for login</p>
                 </div>
 
                 <div class="form-group">
                     <label for="email">Email Address</label>
-                    <input type="email"
-                           id="email"
-                           name="email"
-                           value="{{ request.user.email }}"
-                           class="form-input"
-                           placeholder="user@example.com"
-                           autocomplete="email">
+                    <input type="email" id="email" name="email" value="{{ request.user.email }}" class="form-input"
+                        placeholder="user@example.com" autocomplete="email">
                     <p class="form-help">Optional</p>
                 </div>
 
                 <div class="form-group">
+                    <label for="avatar_url">Avatar URL</label>
+                    <div style="display: flex; gap: var(--space-sm);">
+                        <input type="url" id="avatar_url" name="avatar_url"
+                            value="{{ request.user.profile.avatar_url|default:'' }}" class="form-input"
+                            placeholder="https://avatars.githubusercontent.com/u/27804" style="flex: 1;">
+                        <button type="button" id="fetch-gravatar-btn" class="btn secondary-btn"
+                            style="white-space: nowrap;" title="Generate URL from Email">
+                            Fetch from Gravatar
+                        </button>
+                    </div>
+                    <p class="form-help">Link to your profile picture</p>
+                </div>
+
+                <script>
+                    document.getElementById('fetch-gravatar-btn').addEventListener('click', function () {
+                        const emailInput = document.getElementById('email');
+                        const avatarInput = document.getElementById('avatar_url');
+                        const email = emailInput.value.trim().toLowerCase();
+
+                        if (!email) {
+                            alert('Please enter an email address first.');
+                            return;
+                        }
+
+                        if (typeof md5 === 'undefined') {
+                            console.error('MD5 library not loaded');
+                            return;
+                        }
+
+                        const hash = md5(email);
+                        const gravatarUrl = `https://www.gravatar.com/avatar/${hash}?s=200`; // Requesting slightly larger size for quality
+
+                        avatarInput.value = gravatarUrl;
+
+                        // Trigger preview update manually
+                        const previewImg = document.querySelector('#profile-panel .user-avatar-img');
+                        if (previewImg) {
+                            previewImg.src = gravatarUrl;
+                        }
+                    });
+
+                    // Live preview update on input change
+                    document.getElementById('avatar_url').addEventListener('input', function (e) {
+                        const val = e.target.value.trim();
+                        const previewImg = document.querySelector('#profile-panel .user-avatar-img');
+                        if (previewImg && val) {
+                            previewImg.src = val;
+                        }
+                    });
+                </script>
+
+                <div class="form-group">
                     <label for="member_since">Member Since</label>
-                    <input type="text"
-                           id="member_since"
-                           value="{{ request.user.date_joined|date:'F j, Y • g:i A' }}"
-                           class="form-input"
-                           disabled
-                           style="cursor: not-allowed; opacity: 0.6;">
+                    <input type="text" id="member_since" value="{{ request.user.date_joined|date:'F j, Y • g:i A' }}"
+                        class="form-input" disabled style="cursor: not-allowed; opacity: 0.6;">
                     <p class="form-help">Account creation date</p>
                 </div>
             </div>
@@ -63,33 +117,21 @@
 
                 <div class="form-group">
                     <label for="current_password">Current Password</label>
-                    <input type="password"
-                           id="current_password"
-                           name="current_password"
-                           placeholder="Enter current password"
-                           class="form-input"
-                           autocomplete="current-password">
+                    <input type="password" id="current_password" name="current_password"
+                        placeholder="Enter current password" class="form-input" autocomplete="current-password">
                     <p class="form-help">Required to change password</p>
                 </div>
 
                 <div class="form-group">
                     <label for="new_password">New Password</label>
-                    <input type="password"
-                           id="new_password"
-                           name="new_password"
-                           placeholder="Enter new password"
-                           class="form-input"
-                           autocomplete="new-password">
+                    <input type="password" id="new_password" name="new_password" placeholder="Enter new password"
+                        class="form-input" autocomplete="new-password">
                 </div>
 
                 <div class="form-group">
                     <label for="confirm_password">Confirm New Password</label>
-                    <input type="password"
-                           id="confirm_password"
-                           name="confirm_password"
-                           placeholder="Re-enter new password"
-                           class="form-input"
-                           autocomplete="new-password">
+                    <input type="password" id="confirm_password" name="confirm_password"
+                        placeholder="Re-enter new password" class="form-input" autocomplete="new-password">
                 </div>
             </div>
 
@@ -98,7 +140,8 @@
                     Cancel
                 </a>
                 <button type="submit" class="btn primary-action-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="20 6 9 17 4 12"></polyline>
                     </svg>
                     Save Changes
@@ -112,6 +155,5 @@
 
 {% block settings_scripts %}
 <script src="https://cdn.jsdelivr.net/npm/blueimp-md5@2.19.0/js/md5.min.js"></script>
-<script src="{% static 'js/gravatar.js' %}"></script>
+<script src="{% static 'js/avatar.js' %}?v=1"></script>
 {% endblock %}
-

@@ -471,6 +471,16 @@ def settings_profile(request):
                 return render(request, 'shortener/settings_profile.html')
             user.email = email
 
+        # Update avatar URL
+        avatar_url = request.POST.get('avatar_url', '').strip()
+        if hasattr(user, 'profile'):
+            user.profile.avatar_url = avatar_url
+            user.profile.save()
+        else:
+             # Should exist due to signal/script, but safe fallback
+            from .models import Profile
+            Profile.objects.create(user=user, avatar_url=avatar_url)
+
         # Update password if provided
         if new_password:
             if not current_password:
@@ -506,7 +516,7 @@ def settings_users(request):
         return redirect('dashboard')
 
     # Get users data
-    users = list(User.objects.exclude(id=request.user.id).order_by('-date_joined'))
+    users = list(User.objects.select_related('profile').exclude(id=request.user.id).order_by('-date_joined'))
     users.insert(0, request.user)
 
     # Calculate user stats
