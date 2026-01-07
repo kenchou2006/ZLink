@@ -128,6 +128,7 @@ def delete_cache_key(request):
                 messages.success(request, f"Key '{key}' deleted.")
             except Exception as e:
                 messages.error(request, f"Error deleting key: {e}")
+
     return redirect('settings_cache')
 
 @admin_required
@@ -144,6 +145,8 @@ def clear_all_cache(request):
             messages.success(request, "All 'shortener:url:*' cache keys cleared.")
         except Exception as e:
             messages.error(request, f"Error clearing cache: {e}")
+
+    # Previously returned HTMX fragment for HX-Request; now always redirect to settings page
     return redirect('settings_cache')
 
 def root_redirect(request):
@@ -305,6 +308,9 @@ def edit_user(request, user_id):
                 user_to_edit.save()
                 messages.success(request, f"User {user_to_edit.username} has been activated.")
                 return redirect('edit_user', user_id=user_id)
+            else:
+                 messages.error(request, "Permission denied or invalid action.")
+                 return redirect('edit_user', user_id=user_id)
 
         if action == 'deactivate':
             if request.user.is_superuser and user_to_edit != request.user:
@@ -312,12 +318,18 @@ def edit_user(request, user_id):
                 user_to_edit.save()
                 messages.success(request, f"User {user_to_edit.username} has been deactivated.")
                 return redirect('edit_user', user_id=user_id)
+            else:
+                 messages.error(request, "Permission denied or invalid action.")
+                 return redirect('edit_user', user_id=user_id)
 
         if action == 'delete':
             if user_to_edit == request.user:
                 messages.error(request, "You cannot delete yourself.")
                 return render(request, 'shortener/edit_user.html', {'target_user': user_to_edit})
-            if user_to_edit.is_superuser and not request.user.is_superuser:
+            if not request.user.is_superuser:
+                 messages.error(request, "Permission denied.")
+                 return redirect('settings_users')
+            if user_to_edit.is_superuser and not request.user.is_superuser: # Redundant check but ok
                 messages.error(request, "You do not have permission to delete superusers.")
                 return render(request, 'shortener/edit_user.html', {'target_user': user_to_edit})
             
@@ -352,8 +364,10 @@ def edit_user(request, user_id):
                 return render(request, 'shortener/edit_user.html', {'target_user': user_to_edit})
             user_to_edit.set_password(password)
             
+        # Security: Prevent self-deprivilege and unauthorized promotion
         if request.user.is_superuser and user_to_edit != request.user:
-            is_superuser = request.POST.get('is_superuser') == 'on'
+            # Checkbox logic: 'is_superuser' in POST means checked (True), otherwise unchecked (False)
+            is_superuser = 'is_superuser' in request.POST
             user_to_edit.is_superuser = is_superuser
             
         user_to_edit.save()

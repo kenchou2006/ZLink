@@ -1,101 +1,104 @@
 {% extends 'shortener/settings.html' %}
 
 {% block settings_title %}Cache Management{% endblock %}
-{% block cache_active %}active{% endblock %}
+{% block cache_active %}bg-gray-50 text-primary-700 hover:bg-white hover:text-primary-700{% endblock %}
 
 {% block settings_content %}
-<!-- Cache Panel -->
-<div id="cache-panel" class="settings-panel active">
-    <div class="settings-panel-header">
+<!-- Cache Panel (Tailwind) -->
+<div id="cache-panel" class="py-6">
+  <div class="max-w-5xl mx-auto">
+    <div class="flex items-start justify-between gap-4 mb-6">
+      <div>
+        <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Cache Management</h2>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Monitor and manage Redis cache entries</p>
+      </div>
+
+      <form action="{% url 'clear_all_cache' %}" method="POST" onsubmit="return confirm('Clear all cache keys?\n\nThis will remove all cached URLs and may temporarily impact performance.');">
+        {% csrf_token %}
+        <button type="submit" class="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-red-600 hover:bg-red-700 text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-500">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="1 4 1 10 7 10"></polyline>
+            <polyline points="23 20 23 14 17 14"></polyline>
+            <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
+          </svg>
+          Clear All Cache
+        </button>
+      </form>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+        <h3 class="text-sm text-gray-500 dark:text-gray-400">Total Cache Keys</h3>
+        <div id="cache-count" class="mt-2 text-2xl font-bold text-gray-900 dark:text-gray-100">{{ keys|length }}</div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex items-center justify-between">
         <div>
-            <h2>Cache Management</h2>
-            <p class="settings-description">Monitor and manage Redis cache entries</p>
+          <h3 class="text-sm text-gray-500 dark:text-gray-400">Status</h3>
+          <div id="cache-status" class="mt-2 text-lg font-semibold" style="color: {% if keys %}#16a34a{% else %}#9ca3af{% endif %};">
+            {% if keys %}Online{% else %}Empty{% endif %}
+          </div>
         </div>
-        <form action="{% url 'clear_all_cache' %}" method="POST" onsubmit="return confirm('Clear all cache keys?\n\nThis will remove all cached URLs and may temporarily impact performance.');">
-            {% csrf_token %}
-            <button type="submit" class="delete-btn" style="padding: 0.625rem var(--space-lg);">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="1 4 1 10 7 10"></polyline>
-                    <polyline points="23 20 23 14 17 14"></polyline>
-                    <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
-                </svg>
-                Clear All Cache
-            </button>
-        </form>
+        <div class="text-sm text-gray-400">&nbsp;</div>
+      </div>
     </div>
 
-    <div class="stats-grid">
-        <div class="stat-card">
-            <h3>Total Cache Keys</h3>
-            <div class="stat-value">{{ keys|length }}</div>
-        </div>
-        <div class="stat-card">
-            <h3>Status</h3>
-            <div class="stat-value" style="font-size: 1.5rem; color: {% if keys %}var(--success){% else %}var(--text-disabled){% endif %};">
-                {% if keys %}Online{% else %}Empty{% endif %}
-            </div>
-        </div>
-    </div>
-
-    {% if keys %}
-    <div class="links-table-container">
-        <table class="links-table">
-            <thead>
-                <tr>
-                    <th>Cache Key</th>
-                    <th>Type</th>
-                    <th>TTL (seconds)</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in keys %}
-                <tr>
-                    <td>
-                        <code class="cache-key" title="{{ item.key }}">
-                            {{ item.display_key }}
-                        </code>
-                    </td>
-                    <td>
-                        <span class="cache-type-badge">
-                            {{ item.type }}
-                        </span>
-                    </td>
-                    <td>
-                        {% if item.ttl > 0 %}
-                        <span class="ttl-active">{{ item.ttl }}s</span>
-                        {% elif item.ttl == -1 %}
-                        <span class="ttl-never">∞ Never</span>
-                        {% else %}
-                        <span class="ttl-expired">Expired</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <form action="{% url 'delete_cache_key' %}" method="POST" style="display:inline;">
-                            {% csrf_token %}
-                            <input type="hidden" name="key" value="{{ item.key }}">
-                            <button type="submit" class="delete-btn"
-                                onclick="return confirm('Delete cache key: {{ item.display_key }}?');">
-                                Delete
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
+    <div id="cache-list">
+      {% if keys %}
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-900">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Cache Key</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Type</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">TTL (seconds)</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
+            {% for item in keys %}
+            <tr>
+              <td class="px-4 py-3 whitespace-nowrap align-top">
+                <div class="text-sm font-mono text-gray-700 dark:text-gray-200 truncate max-w-[40ch]" title="{{ item.key }}">{{ item.display_key }}</div>
+              </td>
+              <td class="px-4 py-3 whitespace-nowrap align-top">
+                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200">{{ item.type }}</span>
+              </td>
+              <td class="px-4 py-3 whitespace-nowrap align-top">
+                {% if item.ttl > 0 %}
+                <span class="text-sm text-gray-700 dark:text-gray-200">{{ item.ttl }}s</span>
+                {% elif item.ttl == -1 %}
+                <span class="text-sm text-gray-700 dark:text-gray-200">∞ Never</span>
+                {% else %}
+                <span class="text-sm text-red-600 dark:text-red-400">Expired</span>
+                {% endif %}
+              </td>
+              <td class="px-4 py-3 whitespace-nowrap align-top">
+                <form action="{% url 'delete_cache_key' %}" method="POST" class="inline" onsubmit="return confirm('Delete cache key: {{ item.display_key }}?');">
+                  {% csrf_token %}
+                  <input type="hidden" name="key" value="{{ item.key }}">
+                  <button type="submit" class="inline-flex items-center px-3 py-1.5 rounded-md bg-red-500 hover:bg-red-600 text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-400">Delete</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
         </table>
+      </div>
+      {% else %}
+      <div class="rounded-lg border border-dashed border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-8 text-center">
+        <div class="mx-auto w-24 h-24 flex items-center justify-center rounded-full bg-gray-50 dark:bg-gray-900 mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
+          </svg>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">No cache entries found</h3>
+        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Cache keys will appear here when URLs are accessed</p>
+      </div>
+      {% endif %}
     </div>
-    {% else %}
-    <div class="empty-state">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                  d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-        </svg>
-        <h3>No cache entries found</h3>
-        <p>Cache keys will appear here when URLs are accessed</p>
-    </div>
-    {% endif %}
+
+  </div>
 </div>
 <!-- End Cache Panel -->
 {% endblock %}
-

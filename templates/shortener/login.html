@@ -3,55 +3,67 @@
 {% block title %}Login - ZLink{% endblock %}
 
 {% block content %}
-<div class="login-container">
-    <div class="login-card">
-        <h1>ZLink</h1>
-        <p>Sign in to manage your links</p>
+<div class="min-h-[60vh] flex items-center justify-center">
+    <div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-8">
+        <div class="text-center">
+            <h1 class="text-3xl font-extrabold text-primary-600 dark:text-primary-400">ZLink</h1>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Sign in to manage your links</p>
+        </div>
 
-        <form method="POST">
+        <form method="POST" class="mt-6 space-y-4">
             {% csrf_token %}
             {% if request.GET.next %}
             <input type="hidden" name="next" value="{{ request.GET.next }}">
             {% endif %}
 
             {% if form.errors %}
-            <div class="alert error" style="margin-bottom: var(--space-lg);">
-                Invalid username or password
+            <div class="rounded-md bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 p-3 text-sm text-red-700 dark:text-red-300">
+                {% if form.non_field_errors %}
+                    {% for err in form.non_field_errors %}
+                        <div>{{ err }}</div>
+                    {% endfor %}
+                {% else %}
+                    Invalid username or password
+                {% endif %}
             </div>
             {% endif %}
 
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text"
-                       id="username"
-                       name="username"
-                       placeholder="Enter your username"
-                       required
-                       class="login-input"
-                       autocomplete="username">
+            <div>
+                <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Username</label>
+                <div class="mt-1">
+                    <input id="username" name="username" type="text" autocomplete="username" required
+                        class="appearance-none block w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition"
+                        placeholder="Enter your username">
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password"
-                       id="password"
-                       name="password"
-                       placeholder="Enter your password"
-                       required
-                       class="login-input"
-                       autocomplete="current-password">
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Password</label>
+                <div class="mt-1">
+                    <input id="password" name="password" type="password" autocomplete="current-password" required
+                        class="appearance-none block w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition"
+                        placeholder="Enter your password">
+                </div>
             </div>
 
-            <button type="submit" class="login-btn" style="margin-top: var(--space-md);">
-                Sign In
-            </button>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <input id="remember" name="remember" type="checkbox" class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                    <label for="remember" class="ml-2 block text-sm text-gray-600 dark:text-gray-300">Remember me</label>
+                </div>
+            </div>
+
+            <div>
+                <button type="submit" class="w-full flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition">
+                    Sign In
+                </button>
+            </div>
         </form>
 
-        <div style="margin-top: var(--space-xl); padding-top: var(--space-lg); border-top: 1px solid var(--border-default); text-align: center; color: var(--text-tertiary); font-size: 0.875rem;">
+        <div class="mt-6 pt-4 border-t border-gray-100 dark:border-gray-700 text-center text-sm text-gray-500 dark:text-gray-400">
             <p>Secure admin access for ZLink URL shortener</p>
         </div>
     </div>
 </div>
-
 {% endblock %}
 

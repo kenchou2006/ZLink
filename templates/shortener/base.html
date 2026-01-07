@@ -1,71 +1,211 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+{# Add data-server-theme when user is authenticated so client JS can prefer server-side setting #}
+{% if user.is_authenticated %}
+<html lang="en" class="h-full" data-server-theme="{{ user.profile.theme_preference|default:'system' }}">
+{% else %}
+<html lang="en" class="h-full">
+{% endif %}
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="ZLink - Professional URL Shortener">
     <title>{% block title %}ZLink - URL Shortener{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'shortener/css/style.css' %}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    {# Minimal inline initializer to avoid FOUC. Priority: localStorage > server (data-server-theme) > system #}
+    <script>
+        (function(){
+            try {
+                var el = document.documentElement;
+                var stored = localStorage.getItem('theme');
+                var server = el.getAttribute('data-server-theme');
+                var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var theme = 'light';
+                if (stored === 'dark' || stored === 'light') {
+                    theme = stored;
+                } else if (server === 'dark' || server === 'light') {
+                    theme = server;
+                } else if (prefersDark) {
+                    theme = 'dark';
+                }
+                if (theme === 'dark') el.classList.add('dark'); else el.classList.remove('dark');
+            } catch (e) { /* silent */ }
+        })();
+    </script>
+    <style>
+        /* Custom scrollbar (kept minimal) */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Focus outline utility for accessibility (fallback) */
+        :focus { outline: 3px solid rgba(124,58,237,0.15); outline-offset: 2px; }
+    </style>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            200: '#c7d2fe',
+                            300: '#b5c4ff',
+                            400: '#cbd6ff', /* lightened further for dark mode */
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            900: '#312e81',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Lighten primary text colors specifically in dark mode for better legibility */
+        .dark .text-primary-400 { color: #e6ecff !important; }
+        .dark .text-primary-500 { color: #dfe7ff !important; }
+        .dark .text-primary-600 { color: #d6dbff !important; }
+        .dark .text-primary-700 { color: #cbd6ff !important; }
+    </style>
     <script src="https://cdn.jsdelivr.net/npm/htmx.org"
         integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC"
         crossorigin="anonymous"></script>
 </head>
-<body hx-boost="true">
-    <div class="htmx-indicator"></div>
 
-    <div class="container">
+<body class="h-full font-sans antialiased bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100" hx-boost="true">
+    <div class="htmx-indicator fixed top-0 right-0 m-4 hidden">
+        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
+    </div>
+
+    <div class="min-h-full">
         {% if user.is_authenticated %}
-        <nav class="main-nav">
-            <a href="{% url 'dashboard' %}"
-                class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-                </svg>
-                <span>Links</span>
-            </a>
-            <a href="{% url 'settings' %}"
-                class="nav-link {% if section == 'settings' %}active{% endif %}">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-                <span>Settings</span>
-            </a>
-            <a href="{% url 'logout' %}" class="nav-link logout">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                    <polyline points="16 17 21 12 16 7"></polyline>
-                    <line x1="21" y1="12" x2="9" y2="12"></line>
-                </svg>
-                <span>Logout</span>
-            </a>
+        <nav class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex">
+                        <div class="flex-shrink-0 flex items-center">
+                            <span class="text-2xl font-bold text-primary-600 tracking-tight">ZLink</span>
+                        </div>
+                        <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                            <a href="{% url 'dashboard' %}"
+                                class="{% if request.resolver_match.url_name == 'dashboard' %}border-primary-500 text-gray-900 dark:text-white{% else %}border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition duration-150 ease-in-out">
+                                <svg class="mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                </svg>
+                                Links
+                            </a>
+                            <a href="{% url 'settings' %}"
+                                class="{% if section == 'settings' %}border-primary-500 text-gray-900 dark:text-white{% else %}border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition duration-150 ease-in-out">
+                                <svg class="mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                Settings
+                            </a>
+                        </div>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:items-center">
+                        <div class="flex items-center">
+                            <button id="theme-toggle" type="button" data-theme-toggle aria-pressed="false" aria-label="Toggle color theme" tabindex="0"
+                                class="mr-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none">
+                                <!-- Sun icon -->
+                                <svg data-theme-icon="light" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path>
+                                </svg>
+                                <!-- Moon icon -->
+                                <svg data-theme-icon="dark" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                                </svg>
+                            </button>
+                            <span class="text-sm text-gray-500 mr-4 dark:text-gray-300">{{ user.username }}</span>
+                            <a href="{% url 'logout' %}"
+                                class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white focus:outline-none transition ease-in-out duration-150">
+                                <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                </svg>
+                                Logout
+                            </a>
+                        </div>
+                    </div>
+                    <div class="-mr-2 flex items-center sm:hidden">
+                        <!-- Mobile menu button placeholder (can be implemented with JS if needed later) -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile menu (hidden by default) -->
+            <div class="sm:hidden hidden" id="mobile-menu">
+                <div class="pt-2 pb-3 space-y-1">
+                    <a href="{% url 'dashboard' %}"
+                        class="{% if request.resolver_match.url_name == 'dashboard' %}bg-primary-50 border-primary-500 text-primary-700 dark:text-primary-400{% else %}border-transparent text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white{% endif %} block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Links</a>
+                    <a href="{% url 'settings' %}"
+                        class="{% if section == 'settings' %}bg-primary-50 border-primary-500 text-primary-700 dark:text-primary-400{% else %}border-transparent text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white{% endif %} block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Settings</a>
+                    <a href="{% url 'logout' %}"
+                        class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-500 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300">Logout</a>
+                </div>
+            </div>
         </nav>
         {% endif %}
 
-        {% block content %}
-        {% endblock %}
+        <main class="py-10">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                {% include 'shortener/_messages.html' %}
+                {% block content %}
+                {% endblock %}
+            </div>
+        </main>
     </div>
 
     <script>
         function copyToClipboard(text, button) {
             navigator.clipboard.writeText(text).then(() => {
                 const original = button.innerHTML;
-                button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
-                button.style.borderColor = '#059669';
-                button.style.color = '#6ee7b7';
+                button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>';
+                button.classList.add('text-green-600', 'border-green-600');
 
                 setTimeout(() => {
                     button.innerHTML = original;
-                    button.style.borderColor = '';
-                    button.style.color = '';
+                    button.classList.remove('text-green-600', 'border-green-600');
                 }, 1500);
             }).catch(err => {
                 console.error('Failed to copy:', err);
             });
         }
     </script>
+
+    <script>
+        // HTMX spinner control: keep it hidden by default and show only during HTMX requests
+        (function () {
+            var indicator = document.querySelector('.htmx-indicator');
+            if (!indicator) return;
+            // Ensure hidden by default
+            indicator.classList.add('hidden');
+
+            // Show when HTMX starts a request
+            document.body.addEventListener('htmx:beforeRequest', function () {
+                indicator.classList.remove('hidden');
+            });
+
+            // Hide when HTMX finishes (either success or error)
+            document.body.addEventListener('htmx:afterRequest', function () {
+                indicator.classList.add('hidden');
+            });
+            document.body.addEventListener('htmx:sendError', function () {
+                indicator.classList.add('hidden');
+            });
+        })();
+    </script>
+    <script src="{% static 'js/theme-toggle.js' %}"></script>
 </body>
 
 </html>
+

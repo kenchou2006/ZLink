@@ -4,131 +4,129 @@
 {% block title %}{% block settings_title %}Settings{% endblock %} - ZLink{% endblock %}
 
 {% block content %}
-<div class="dashboard-container">
-    <div class="header">
-        <h1>Settings</h1>
-        <p>Manage your application settings and configurations</p>
-    </div>
-
-    {% if messages %}
-    <div class="messages">
-        {% for message in messages %}
-        <div class="alert {{ message.tags }}">
-            {{ message }}
+<div class="div">
+    <div class="md:flex md:items-center md:justify-between mb-8">
+        <div class="min-w-0 flex-1">
+            <h2
+                class="text-2xl font-bold leading-7 text-gray-900 dark:text-white sm:truncate sm:text-3xl sm:tracking-tight">
+                Settings
+            </h2>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Manage your application settings and configurations
+            </p>
         </div>
-        {% endfor %}
     </div>
-    {% endif %}
 
-    <!-- Settings Layout with Sidebar -->
-    <div class="settings-layout">
-        <!-- Left Sidebar Navigation -->
-        <aside class="settings-sidebar">
-            <nav class="settings-nav">
-                <a href="{% url 'settings_profile' %}" class="settings-nav-item {% block profile_active %}{% endblock %}">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="12" cy="7" r="4"></circle>
+
+    <div class="lg:grid lg:grid-cols-12 lg:gap-x-5">
+        <aside class="py-6 px-2 sm:px-6 lg:col-span-3 lg:px-0 lg:py-0">
+            <nav class="space-y-1">
+                <a href="{% url 'settings_profile' %}"
+                    class="{% block profile_active %}{% endblock %} group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white aria-[current=page]:bg-gray-50 aria-[current=page]:text-primary-700 dark:aria-[current=page]:bg-gray-700 dark:aria-[current=page]:text-primary-400"
+                    {% if request.resolver_match.url_name == 'settings_profile' %}aria-current="page" {% endif %}>
+                    <svg class="mr-3 h-6 w-6 flex-shrink-0 text-gray-400 group-hover:text-gray-500 group-aria-[current=page]:text-primary-600 dark:text-gray-400 dark:group-hover:text-gray-300 dark:group-aria-[current=page]:text-primary-400"
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
-                    <div class="settings-nav-content">
-                        <span class="settings-nav-title">Profile</span>
-                        <span class="settings-nav-desc">Your account settings</span>
-                    </div>
+                    <span class="truncate">Profile</span>
                 </a>
+
                 {% if request.user.is_superuser %}
-                <a href="{% url 'settings_users' %}" class="settings-nav-item {% block users_active %}{% endblock %}">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="9" cy="7" r="4"></circle>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                <a href="{% url 'settings_users' %}"
+                    class="{% block users_active %}{% endblock %} group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white aria-[current=page]:bg-gray-50 aria-[current=page]:text-primary-700 aria-[current=page]:hover:bg-white aria-[current=page]:hover:text-primary-700 dark:aria-[current=page]:bg-gray-800 dark:aria-[current=page]:text-primary-400"
+                    {% if request.resolver_match.url_name == 'settings_users' %}aria-current="page" {% endif %}>
+                    <svg class="mr-3 h-6 w-6 flex-shrink-0 text-gray-400 group-hover:text-gray-500 group-aria-[current=page]:text-primary-600 dark:text-gray-400 dark:group-hover:text-gray-300 dark:group-aria-[current=page]:text-primary-400"
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                     </svg>
-                    <div class="settings-nav-content">
-                        <span class="settings-nav-title">User</span>
-                        <span class="settings-nav-desc">Manage users & permissions</span>
-                    </div>
+                    <span class="truncate">Users</span>
                 </a>
-                <a href="{% url 'settings_cache' %}" class="settings-nav-item {% block cache_active %}{% endblock %}">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
-                        <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
-                        <line x1="6" y1="6" x2="6.01" y2="6"></line>
-                        <line x1="6" y1="18" x2="6.01" y2="18"></line>
+
+                <a href="{% url 'settings_cache' %}"
+                    class="{% block cache_active %}{% endblock %} group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white aria-[current=page]:bg-gray-50 aria-[current=page]:text-primary-700 aria-[current=page]:hover:bg-white aria-[current=page]:hover:text-primary-700 dark:aria-[current=page]:bg-gray-800 dark:aria-[current=page]:text-primary-400"
+                    {% if request.resolver_match.url_name == 'settings_cache' %}aria-current="page" {% endif %}>
+                    <svg class="mr-3 h-6 w-6 flex-shrink-0 text-gray-400 group-hover:text-gray-500 group-aria-[current=page]:text-primary-600 dark:text-gray-400 dark:group-hover:text-gray-300 dark:group-aria-[current=page]:text-primary-400"
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                     </svg>
-                    <div class="settings-nav-content">
-                        <span class="settings-nav-title">Cache</span>
-                        <span class="settings-nav-desc">Monitor Redis cache</span>
-                    </div>
+                    <span class="truncate">Cache</span>
                 </a>
                 {% endif %}
             </nav>
         </aside>
 
-        <!-- Right Content Area -->
-        <main class="settings-content">
+        <div class="space-y-6 sm:px-6 lg:col-span-9 lg:px-0">
             {% block settings_content %}
             <!-- Default content: Settings selection cards -->
-            <div class="settings-panel active">
-                <div style="max-width: 600px; margin: 0 auto;">
-                    <div class="stats-grid" style="grid-template-columns: 1fr;">
-                        <a href="{% url 'settings_profile' %}" style="text-decoration: none;">
-                            <div class="stat-card" style="cursor: pointer; transition: all var(--transition-base);" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
-                                <div style="display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-md);">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent);">
-                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                        <circle cx="12" cy="7" r="4"></circle>
-                                    </svg>
-                                    <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--text-primary);">My Profile</h3>
-                                </div>
-                                <p style="color: var(--text-tertiary); font-size: 0.875rem; margin: 0;">
-                                    Update your account information and change password
-                                </p>
-                            </div>
-                        </a>
-
-                        {% if request.user.is_superuser %}
-                        <a href="{% url 'settings_users' %}" style="text-decoration: none;">
-                            <div class="stat-card" style="cursor: pointer; transition: all var(--transition-base); margin-top: var(--space-lg);" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
-                                <div style="display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-md);">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary-light);">
-                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                        <circle cx="9" cy="7" r="4"></circle>
-                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                                    </svg>
-                                    <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--text-primary);">User Management</h3>
-                                </div>
-                                <p style="color: var(--text-tertiary); font-size: 0.875rem; margin: 0;">
-                                    Manage administrator accounts, permissions, and user settings
-                                </p>
-                            </div>
-                        </a>
-
-                        <a href="{% url 'settings_cache' %}" style="text-decoration: none;">
-                            <div class="stat-card" style="cursor: pointer; transition: all var(--transition-base); margin-top: var(--space-lg);" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
-                                <div style="display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-md);">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--secondary-light);">
-                                        <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
-                                        <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
-                                        <line x1="6" y1="6" x2="6.01" y2="6"></line>
-                                        <line x1="6" y1="18" x2="6.01" y2="18"></line>
-                                    </svg>
-                                    <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--text-primary);">Cache Management</h3>
-                                </div>
-                                <p style="color: var(--text-tertiary); font-size: 0.875rem; margin: 0;">
-                                    Monitor and manage Redis cache entries for optimal performance
-                                </p>
-                            </div>
-                        </a>
-                        {% endif %}
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <a href="{% url 'settings_profile' %}"
+                    class="relative flex items-center space-x-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-6 py-5 shadow-sm focus-within:ring-2 focus-within:ring-primary-500 focus-within:ring-offset-2 hover:border-gray-400 dark:hover:border-gray-600 hover:shadow-md transition-all">
+                    <div class="flex-shrink-0">
+                        <div
+                            class="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900 ring-8 ring-white dark:ring-gray-800">
+                            <svg class="h-6 w-6 text-purple-600 dark:text-purple-300" xmlns="http://www.w3.org/2000/svg"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                        </div>
                     </div>
-                </div>
+                    <div class="min-w-0 flex-1">
+                        <span class="absolute inset-0" aria-hidden="true"></span>
+                        <p class="text-sm font-medium text-gray-900 dark:text-white">My Profile</p>
+                        <p class="truncate text-sm text-gray-500 dark:text-gray-400">Update your account information and
+                            password</p>
+                    </div>
+                </a>
+
+                {% if request.user.is_superuser %}
+                <a href="{% url 'settings_users' %}"
+                    class="relative flex items-center space-x-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-6 py-5 shadow-sm focus-within:ring-2 focus-within:ring-primary-500 focus-within:ring-offset-2 hover:border-gray-400 dark:hover:border-gray-600 hover:shadow-md transition-all">
+                    <div class="flex-shrink-0">
+                        <div
+                            class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900 ring-8 ring-white dark:ring-gray-800">
+                            <svg class="h-6 w-6 text-blue-600 dark:text-blue-300" xmlns="http://www.w3.org/2000/svg"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <span class="absolute inset-0" aria-hidden="true"></span>
+                        <p class="text-sm font-medium text-gray-900 dark:text-white">User Management</p>
+                        <p class="truncate text-sm text-gray-500 dark:text-gray-400">Manage administrators and
+                            permissions</p>
+                    </div>
+                </a>
+
+                <a href="{% url 'settings_cache' %}"
+                    class="relative flex items-center space-x-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-6 py-5 shadow-sm focus-within:ring-2 focus-within:ring-primary-500 focus-within:ring-offset-2 hover:border-gray-400 dark:hover:border-gray-600 hover:shadow-md transition-all">
+                    <div class="flex-shrink-0">
+                        <div
+                            class="flex h-10 w-10 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900 ring-8 ring-white dark:ring-gray-800">
+                            <svg class="h-6 w-6 text-yellow-600 dark:text-yellow-300" xmlns="http://www.w3.org/2000/svg"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <span class="absolute inset-0" aria-hidden="true"></span>
+                        <p class="text-sm font-medium text-gray-900 dark:text-white">Cache Management</p>
+                        <p class="truncate text-sm text-gray-500 dark:text-gray-400">Monitor Redis cache entries</p>
+                    </div>
+                </a>
+                {% endif %}
             </div>
             {% endblock %}
-        </main>
+        </div>
     </div>
 </div>
 
 {% block settings_scripts %}{% endblock %}
 {% endblock %}
-
