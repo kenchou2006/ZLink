@@ -1,0 +1,35 @@
+{% comment %}Avatar input + preview. Expect: avatar_url, username, initials, fetch_gravatar (bool).{% endcomment %}
+<div class="col-span-1">
+    <label for="avatar_url" class="block text-sm font-medium leading-6 text-gray-900 dark:text-white">Profile
+        Picture</label>
+    <div class="mt-2 flex items-center gap-x-3">
+        <div class="relative">
+            <img id="profile-avatar-img" class="user-avatar-img h-12 w-12 rounded-full object-cover text-gray-300 {% if not avatar_url %}hidden{% endif %}"
+                data-username="{{ username|slice:':1'|upper }}"
+                data-avatar-url="{{ avatar_url|default:'' }}"
+                alt="{{ username }}"
+                src="">
+         <div id="profile-avatar-initials" class="user-avatar-initials h-12 w-12 rounded-full bg-gray-100 dark:bg-gray-600 flex items-center justify-center text-sm font-semibold text-gray-700 dark:text-gray-100 {% if avatar_url %}hidden{% endif %}">{{ initials|default:username|slice:':1'|upper }}</div>
+        </div>
+
+         <div class="flex-1">
+            <div
+                class="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary-600 sm:max-w-md">
+                <input type="url" name="avatar_url" id="avatar_url"
+                    value="{{ avatar_url|default:'' }}"
+                    class="block w-full flex-1 border-0 bg-transparent py-1.5 pl-3 px-3 text-gray-900 dark:text-white placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
+                    placeholder="https://avatars.githubusercontent.com/u/27804">
+            </div>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Enter an image URL or fetch from
+                Gravatar</p>
+        </div>
+
+        {% if fetch_gravatar %}
+        <button type="button" id="fetch-gravatar-btn"
+            class="rounded-md bg-white dark:bg-gray-700 px-2.5 py-1.5 text-sm font-semibold text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600">
+            Fetch from Gravatar
+        </button>
+        {% endif %}
+    </div>
+</div>
+

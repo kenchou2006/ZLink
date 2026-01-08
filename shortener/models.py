@@ -12,7 +12,7 @@ def generate_short_code():
 
 class Link(models.Model):
     original_url = models.URLField()
-    short_code = models.CharField(max_length=15, unique=True, default=generate_short_code)
+    short_code = models.CharField(max_length=15, unique=True, default=generate_short_code, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

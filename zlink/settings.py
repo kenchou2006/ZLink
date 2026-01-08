@@ -112,15 +112,11 @@ CACHES = {
     }
 }
 
-ttl_env = os.getenv('CACHE_TTL')
-if ttl_env and ttl_env.lower() != 'none':
-    try:
-        CACHE_TTL = int(ttl_env)
-    except ValueError:
-        CACHE_TTL = None
-else:
-    CACHE_TTL = None
+_cache_ttl_raw = os.getenv('CACHE_TTL')
+CACHE_TTL = None if _cache_ttl_raw in (None, 'None', 'none', '') else int(_cache_ttl_raw)
 
+GA4_TIMEOUT = int(os.getenv('GA4_TIMEOUT', 3))
+GA4_ASYNC = str(os.getenv('GA4_ASYNC', 'True')).strip().lower() in {'1', 'true', 'yes', 'on'}
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators

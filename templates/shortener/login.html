@@ -5,10 +5,7 @@
 {% block content %}
 <div class="min-h-[60vh] flex items-center justify-center">
     <div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-8">
-        <div class="text-center">
-            <h1 class="text-3xl font-extrabold text-primary-600 dark:text-primary-400">ZLink</h1>
-            <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Sign in to manage your links</p>
-        </div>
+        {% include 'shortener/_page_heading.html' with back_url=None title='ZLink' subtitle='Sign in to manage your links' %}
 
         <form method="POST" class="mt-6 space-y-4">
             {% csrf_token %}
@@ -16,17 +13,7 @@
             <input type="hidden" name="next" value="{{ request.GET.next }}">
             {% endif %}
 
-            {% if form.errors %}
-            <div class="rounded-md bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 p-3 text-sm text-red-700 dark:text-red-300">
-                {% if form.non_field_errors %}
-                    {% for err in form.non_field_errors %}
-                        <div>{{ err }}</div>
-                    {% endfor %}
-                {% else %}
-                    Invalid username or password
-                {% endif %}
-            </div>
-            {% endif %}
+            {% include 'shortener/_form_errors.html' with form=form %}
 
             <div>
                 <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Username</label>
@@ -62,4 +49,3 @@
     </div>
 </div>
 {% endblock %}
-

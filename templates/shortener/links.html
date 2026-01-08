@@ -1,19 +1,11 @@
 {% extends 'shortener/base.html' %}
+{% include 'shortener/_form_errors.html' with form=form %}
 
 {% block title %}Dashboard - ZLink{% endblock %}
 
 {% block content %}
 <div class="space-y-8">
-    <div class="md:flex md:items-center md:justify-between">
-        <div class="min-w-0 flex-1">
-            <h2 class="text-2xl font-bold leading-7 text-gray-900 dark:text-white sm:truncate sm:text-3xl sm:tracking-tight">
-                Dashboard
-            </h2>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Create and manage your shortened links
-            </p>
-        </div>
-    </div>
+    {% include 'shortener/_page_header.html' with title='Dashboard' subtitle='Create and manage your shortened links' %}
 
 
     <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg mb-8">
@@ -21,99 +13,27 @@
             <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Shorten a new link</h3>
             <form method="POST" action="{% url 'create_link' %}" class="mt-5 sm:flex sm:items-center">
                 {% csrf_token %}
+                {% include 'shortener/_form_errors.html' with form=form %}
+
                 <div class="w-full sm:max-w-xs">
                     <label for="original_url" class="sr-only">Original URL</label>
                     <input type="url" name="original_url" id="original_url" required
                         class="block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
-                        placeholder="https://example.com/">
+                        placeholder="https://example.com/" value="{{ form.original_url.value|default:'' }}">
                 </div>
                 <div class="mt-3 w-full sm:mt-0 sm:ml-3 sm:max-w-xs">
                     <label for="custom_alias" class="sr-only">Custom Alias (Optional)</label>
                     <input type="text" name="custom_alias" id="custom_alias"
                         class="block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
-                        placeholder="Custom Alias (optional)">
+                        placeholder="Custom Alias (optional)" value="{{ form.custom_alias.value|default:'' }}">
                 </div>
-                <button type="submit"
-                    class="mt-3 inline-flex w-full items-center justify-center rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 sm:mt-0 sm:ml-3 sm:w-auto">
-                    Shorten
-                </button>
+                {% include 'shortener/_form_actions.html' with align='right' primary_label='Shorten' %}
             </form>
         </div>
     </div>
 
     <div class="overflow-hidden bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-        {% if links %}
-        <div class="px-4 py-5 sm:px-6">
-            <div class="flex items-center justify-between">
-                <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Your Links</h3>
-                <div class="text-sm text-gray-500">
-                    Total Links
-                    <div class="text-3xl font-semibold text-gray-900 dark:text-white">{{ links|length }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="border-t border-gray-100 dark:border-gray-700"></div>
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-                <thead class="bg-gray-50 dark:bg-gray-800">
-                    <tr>
-                        <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">
-                            Original URL</th>
-                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Short Link
-                        </th>
-                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Created</th>
-                        <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                            <span class="sr-only">Actions</span>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
-                    {% for link in links %}
-                    <tr>
-                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 dark:text-gray-100 sm:pl-6 max-w-xs truncate"
-                            title="{{ link.original_url }}">
-                            {{ link.original_url|truncatechars:40 }}
-                        </td>
-                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            <div class="flex items-center space-x-2">
-                                <a href="{{ request.scheme }}://{{ request.get_host }}/{{ link.short_code }}"
-                                    target="_blank" class="text-primary-600 hover:text-primary-900">
-                                    {{ link.short_code }}
-                                </a>
-                                <button
-                                    onclick="copyToClipboard('{{ request.scheme }}://{{ request.get_host }}/{{ link.short_code }}', this)"
-                                    class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </td>
-                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            {{ link.created_at|timesince }} ago
-                        </td>
-                        <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                            <a href="{% url 'edit_link' link.id %}"
-                                class="text-primary-600 hover:text-primary-900">Edit</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <div class="text-center py-12">
-            <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                aria-hidden="true">
-                <path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-            </svg>
-            <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">No links yet</h3>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by creating a new shortened link above.</p>
-        </div>
-        {% endif %}
+        {% include 'shortener/_links_table.html' with links=links scheme=request.scheme host=request.get_host %}
     </div>
 </div>
 {% endblock %}
