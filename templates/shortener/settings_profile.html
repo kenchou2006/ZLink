@@ -22,13 +22,16 @@
                     <label for="avatar_url" class="block text-sm font-medium leading-6 text-gray-900 dark:text-white">Profile
                         Picture</label>
                     <div class="mt-2 flex items-center gap-x-3">
-                        <img class="user-avatar-img h-12 w-12 rounded-full object-cover text-gray-300"
-                            data-avatar-url="{{ request.user.profile.avatar_url|default:'' }}"
-                            data-username="{{ request.user.username|slice:':1'|upper }}"
-                            alt="{{ request.user.username }}"
-                            src="{% if request.user.profile.avatar_url %}{{ request.user.profile.avatar_url }}{% else %}https://ui-avatars.com/api/?name={{ request.user.username }}&background=6366f1&color=fff{% endif %}">
+                        <div class="relative">
+                            <img id="profile-avatar-img" class="user-avatar-img h-12 w-12 rounded-full object-cover text-gray-300 {% if not request.user.profile.avatar_url %}hidden{% endif %}"
+                                data-username="{{ request.user.username|slice:':1'|upper }}"
+                                data-avatar-url="{{ request.user.profile.avatar_url|default:'' }}"
+                                alt="{{ request.user.username }}"
+                                src="">
+                         <div id="profile-avatar-initials" class="user-avatar-initials h-12 w-12 rounded-full bg-gray-100 dark:bg-gray-600 flex items-center justify-center text-sm font-semibold text-gray-700 dark:text-gray-100 {% if request.user.profile.avatar_url %}hidden{% endif %}">{{ request.user.username|slice:":1"|upper }}</div>
+                        </div>
 
-                        <div class="flex-1">
+                         <div class="flex-1">
                             <div
                                 class="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary-600 sm:max-w-md">
                                 <input type="url" name="avatar_url" id="avatar_url"
@@ -151,30 +154,117 @@
 
         avatarInput.value = gravatarUrl;
 
-        // Trigger preview update manually
-        const previewImg = document.querySelector('.user-avatar-img');
-        if (previewImg) {
+        // Trigger preview update manually (scope to profile preview only)
+        const previewImg = document.getElementById('profile-avatar-img');
+        const previewInitials = document.getElementById('profile-avatar-initials');
+        if (previewImg && previewInitials) {
             if (typeof previewImg.updateAvatarPreview === 'function') {
                 previewImg.updateAvatarPreview(gravatarUrl);
             } else {
                 previewImg.src = gravatarUrl;
             }
+            // Show image, hide initials
+            previewImg.classList.remove('hidden');
+            previewInitials.classList.add('hidden');
         }
     });
 
-    // Live preview update on input change
+    // Helper: generate inline SVG data URI for initials (small, deterministic)
+    function initialsDataUri(initial, size = 120, bg = '#6366f1', fg = '#ffffff') {
+        const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}'><rect width='100%25' height='100%25' fill='${bg}'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial,Helvetica,sans-serif' font-size='${Math.round(size/2.5)}' fill='${fg}'>${initial}</text></svg>`;
+        return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+    }
+
     document.getElementById('avatar_url').addEventListener('input', function (e) {
         const val = e.target.value.trim();
-        const previewImg = document.querySelector('.user-avatar-img');
-        if (previewImg) {
-            if (typeof previewImg.updateAvatarPreview === 'function') {
-                // empty value -> revert to ui-avatar
-                previewImg.updateAvatarPreview(val || null);
-            } else {
-                if (val) previewImg.src = val;
-            }
+        const previewImg = document.getElementById('profile-avatar-img');
+        const previewInitials = document.getElementById('profile-avatar-initials');
+        if (!previewImg || !previewInitials) return;
+
+        if (typeof previewImg.updateAvatarPreview === 'function') {
+            // Let custom preview handler manage it
+            previewImg.updateAvatarPreview(val || null);
+            return;
+        }
+
+        if (val) {
+            previewImg.src = val;
+            previewImg.classList.remove('hidden');
+            previewInitials.classList.add('hidden');
+        } else {
+            // No URL: hide image and show initials div
+            previewImg.src = '';
+            previewImg.classList.add('hidden');
+            previewInitials.classList.remove('hidden');
         }
     });
+
+    // If the profile preview img doesn't have updateAvatarPreview (global loader not attached),
+    // attach a local validator so the preview only applies valid images.
+    (function attachLocalPreviewValidator() {
+         const previewImg = document.getElementById('profile-avatar-img');
+         const previewInitials = document.getElementById('profile-avatar-initials');
+         if (!previewImg || !previewInitials) return;
+         if (typeof previewImg.updateAvatarPreview === 'function') return;
+
+         previewImg.updateAvatarPreview = function (url) {
+             const u = (url || '').trim();
+             if (!u) {
+                previewImg.src = '';
+                previewImg.classList.add('hidden');
+                previewInitials.classList.remove('hidden');
+                return;
+             }
+
+             const tmp = new Image();
+             let done = false;
+             const tto = setTimeout(() => {
+                if (!done) {
+                   done = true;
+                   previewImg.src = '';
+                   previewImg.classList.add('hidden');
+                   previewInitials.classList.remove('hidden');
+                }
+             }, 3000);
+
+             tmp.onload = function () {
+                if (done) return;
+                if (!tmp.naturalWidth || !tmp.naturalHeight) {
+                   done = true;
+                   clearTimeout(tto);
+                   previewImg.src = '';
+                   previewImg.classList.add('hidden');
+                   previewInitials.classList.remove('hidden');
+                   return;
+                }
+                done = true;
+                clearTimeout(tto);
+                previewImg.src = u;
+                previewImg.classList.remove('hidden');
+                previewInitials.classList.add('hidden');
+             };
+             tmp.onerror = function () {
+                if (done) return;
+                done = true;
+                clearTimeout(tto);
+                previewImg.src = '';
+                previewImg.classList.add('hidden');
+                previewInitials.classList.remove('hidden');
+             };
+             tmp.src = u;
+         };
+
+        // If there is an existing data-avatar-url (stored profile avatar), validate & apply it now
+        const existing = (previewImg.getAttribute('data-avatar-url') || '').trim();
+        if (existing) {
+            // Run async so DOM is ready and validator is attached
+            setTimeout(() => {
+                try {
+                    previewImg.updateAvatarPreview(existing);
+                } catch (e) { /* ignore */ }
+            }, 0);
+        }
+    })();
 </script>
 {% endblock %}
 

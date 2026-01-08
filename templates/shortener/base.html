@@ -13,7 +13,6 @@
     <meta name="description" content="ZLink - Professional URL Shortener">
     <title>{% block title %}ZLink - URL Shortener{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    {# Minimal inline initializer to avoid FOUC. Priority: localStorage > server (data-server-theme) > system #}
     <script>
         (function(){
             try {
@@ -94,7 +93,7 @@
                         </div>
                         <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
                             <a href="{% url 'dashboard' %}"
-                                class="{% if request.resolver_match.url_name == 'dashboard' %}border-primary-500 text-gray-900 dark:text-white{% else %}border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition duration-150 ease-in-out">
+                                class="{% if request.resolver_match.url_name == 'dashboard' %}border-primary-500 text-gray-900 dark:text-gray-100{% else %}border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition duration-150 ease-in-out">
                                 <svg class="mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none"
                                     viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
@@ -102,7 +101,7 @@
                                 Links
                             </a>
                             <a href="{% url 'settings' %}"
-                                class="{% if section == 'settings' %}border-primary-500 text-gray-900 dark:text-white{% else %}border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition duration-150 ease-in-out">
+                                class="{% if section == 'settings' %}border-primary-500 text-gray-900 dark:text-gray-100{% else %}border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition duration-150 ease-in-out">
                                 <svg class="mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none"
                                     viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -113,31 +112,60 @@
                         </div>
                     </div>
                     <div class="hidden sm:ml-6 sm:flex sm:items-center">
-                        <div class="flex items-center">
-                            <button id="theme-toggle" type="button" data-theme-toggle aria-pressed="false" aria-label="Toggle color theme" tabindex="0"
-                                class="mr-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none">
-                                <!-- Sun icon -->
-                                <svg data-theme-icon="light" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path>
-                                </svg>
-                                <!-- Moon icon -->
-                                <svg data-theme-icon="dark" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
-                                </svg>
-                            </button>
-                            <span class="text-sm text-gray-500 mr-4 dark:text-gray-300">{{ user.username }}</span>
-                            <a href="{% url 'logout' %}"
-                                class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white focus:outline-none transition ease-in-out duration-150">
-                                <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                                </svg>
-                                Logout
-                            </a>
+                        <div class="flex items-center space-x-4">
+                            <div class="flex items-center">
+                                <img class="user-avatar-img h-8 w-8 rounded-full object-cover {% if not user.profile.avatar_url %}hidden{% endif %}"
+                                    data-avatar-url="{{ user.profile.avatar_url|default:'' }}"
+                                    data-username="{{ user.username|slice:':1'|upper }}"
+                                    alt="{{ user.username }}"
+                                    src="">
+                                <div class="user-avatar-initials h-8 w-8 rounded-full bg-gray-100 dark:bg-gray-600 flex items-center justify-center text-sm font-semibold text-gray-700 dark:text-gray-100 {% if user.profile.avatar_url %}hidden{% endif %}">{{ user.username|slice:":1"|upper }}</div>
+                                <div class="ml-3 hidden sm:block">
+                                     <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ user.username }}</div>
+                                     <div class="text-xs text-gray-500 dark:text-gray-300">{{ user.email }}</div>
+                                 </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button id="theme-toggle" type="button" data-theme-toggle aria-pressed="false" aria-label="Toggle color theme" tabindex="0"
+                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white focus:outline-none transition ease-in-out duration-150">
+                                    <!-- Light (sun) - from svgrepo/light-mode.svg (converted to use currentColor) -->
+                                    <svg data-theme-icon="light" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <!-- Dark (moon - outline / night) - from svgrepo/dark-mode-night-moon.svg -->
+                                    <svg data-theme-icon="dark" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+                                    </svg>
+                                    <!-- System (moon - solid style) - from svgrepo/dark-mode-solid.svg -->
+                                    <svg data-theme-icon="system" class="hidden w-5 h-5" aria-hidden="true" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                                        <path d="M14,24A10,10,0,0,0,24,34V14A10,10,0,0,0,14,24Z"/>
+                                        <path d="M24,2A22,22,0,1,0,46,24,21.9,21.9,0,0,0,24,2ZM6,24A18.1,18.1,0,0,1,24,6v8a10,10,0,0,1,0,20v8A18.1,18.1,0,0,1,6,24Z"/>
+                                    </svg>
+                                </button>
+                                <a href="{% url 'logout' %}"
+                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white focus:outline-none transition ease-in-out duration-150">
+                                    <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                    </svg>
+                                    Logout
+                                </a>
+                            </div>
                         </div>
-                    </div>
+                     </div>
                     <div class="-mr-2 flex items-center sm:hidden">
-                        <!-- Mobile menu button placeholder (can be implemented with JS if needed later) -->
+                        <!-- Mobile menu button -->
+                        <button id="mobile-menu-button" type="button" aria-controls="mobile-menu" aria-expanded="false" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                            <span class="sr-only">Open main menu</span>
+                            <!-- Hamburger icon -->
+                            <svg id="icon-open" class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                            <!-- Close icon -->
+                            <svg id="icon-close" class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -145,12 +173,63 @@
             <!-- Mobile menu (hidden by default) -->
             <div class="sm:hidden hidden" id="mobile-menu">
                 <div class="pt-2 pb-3 space-y-1">
+                    <!-- Mobile user row + theme toggle -->
+                    <div class="px-3 py-3 border-b border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <img class="user-avatar-img h-8 w-8 rounded-full object-cover {% if not user.profile.avatar_url %}hidden{% endif %}"
+                                    data-avatar-url="{{ user.profile.avatar_url|default:'' }}"
+                                    data-username="{{ user.username|slice:':1'|upper }}"
+                                    alt="{{ user.username }}"
+                                    src="">
+                                <div class="user-avatar-initials h-8 w-8 rounded-full bg-gray-100 dark:bg-gray-600 flex items-center justify-center text-sm font-semibold text-gray-700 dark:text-gray-100 {% if user.profile.avatar_url %}hidden{% endif %}">{{ user.username|slice:":1"|upper }}</div>
+                                <!-- Show username & email beside avatar on mobile -->
+                                <div class="ml-3">
+                                    <div class="text-sm font-medium text-gray-900 dark:text-white">{{ user.username }}</div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-300">{{ user.email }}</div>
+                                </div>
+                            </div>
+                            <div class="ml-3">
+                                <button type="button" data-theme-toggle aria-pressed="false" aria-label="Toggle color theme" class="p-2 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none">
+                                    <!-- Light (sun) - from svgrepo/light-mode.svg (converted to use currentColor) -->
+                                    <svg data-theme-icon="light" class="hidden w-5 h-5" aria-hidden="true" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                                        <path d="M12 0a1 1 0 0 1 1 1v4a1 1 0 1 1-2 0V1a1 1 0 0 1 1-1ZM4.929 3.515a1 1 0 0 0-1.414 1.414l2.828 2.828a1 1 0 0 0 1.414-1.414L4.93 3.515ZM1 11a1 1 0 1 0 0 2h4a1 1 0 1 0 0-2H1ZM18 12a1 1 0 0 1 1-1h4a1 1 0 1 1 0 2h-4a1 1 0 0 1-1-1ZM17.657 16.243a1 1 0 0 0-1.414 1.414l2.828 2.828a1 1 0 1 0 1.414-1.414l-2.828-2.828ZM7.757 17.657a1 1 0 1 0-1.414-1.414L3.515 19.07a1 1 0 1 0 1.414 1.414l2.828-2.828ZM20.485 4.929a1 1 0 0 0-1.414-1.414l-2.828 2.828a1 1 0 1 0 1.414 1.414l2.828-2.828ZM13 19a1 1 0 1 0-2 0v4a1 1 0 1 0 2 0v-4ZM12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10Z"/>
+                                    </svg>
+                                    <!-- Dark (moon - outline / night) - from svgrepo/dark-mode-night-moon.svg -->
+                                    <svg data-theme-icon="dark" class="hidden w-5 h-5" aria-hidden="true" viewBox="0 0 35 35" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                                        <path d="M18.44,34.68a18.22,18.22,0,0,1-2.94-.24,18.18,18.18,0,0,1-15-20.86A18.06,18.06,0,0,1,9.59.63,2.42,2.42,0,0,1,12.2.79a2.39,2.39,0,0,1,1,2.41L11.9,3.1l1.23.22A15.66,15.66,0,0,0,23.34,21h0a15.82,15.82,0,0,0,8.47.53A2.44,2.44,0,0,1,34.47,25,18.18,18.18,0,0,1,18.44,34.68ZM10.67,2.89a15.67,15.67,0,0,0-5,22.77A15.66,15.66,0,0,0,32.18,24a18.49,18.49,0,0,1-9.65-.64A18.18,18.18,0,0,1,10.67,2.89Z"/>
+                                    </svg>
+                                    <!-- System (moon - solid style) - from svgrepo/dark-mode-solid.svg -->
+                                    <svg data-theme-icon="system" class="hidden w-5 h-5" aria-hidden="true" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                                        <path d="M14,24A10,10,0,0,0,24,34V14A10,10,0,0,0,14,24Z"/>
+                                        <path d="M24,2A22,22,0,1,0,46,24,21.9,21.9,0,0,0,24,2ZM6,24A18.1,18.1,0,0,1,24,6v8a10,10,0,0,1,0,20v8A18.1,18.1,0,0,1,6,24Z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     <a href="{% url 'dashboard' %}"
-                        class="{% if request.resolver_match.url_name == 'dashboard' %}bg-primary-50 border-primary-500 text-primary-700 dark:text-primary-400{% else %}border-transparent text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white{% endif %} block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Links</a>
+                        class="{% if request.resolver_match.url_name == 'dashboard' %}bg-primary-50 border-primary-500 text-primary-700 dark:bg-gray-700 dark:text-white{% else %}border-transparent text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white{% endif %} block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                        <svg class="mr-3 h-5 w-5 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                        </svg>
+                        Links
+                    </a>
                     <a href="{% url 'settings' %}"
-                        class="{% if section == 'settings' %}bg-primary-50 border-primary-500 text-primary-700 dark:text-primary-400{% else %}border-transparent text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white{% endif %} block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Settings</a>
+                        class="{% if section == 'settings' %}bg-primary-50 border-primary-500 text-primary-700 dark:bg-gray-700 dark:text-white{% else %}border-transparent text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white{% endif %} block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                        <svg class="mr-3 h-5 w-5 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Settings
+                    </a>
                     <a href="{% url 'logout' %}"
-                        class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-500 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300">Logout</a>
+                        class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-500 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300">
+                        <svg class="mr-3 h-5 w-5 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        Logout
+                    </a>
                 </div>
             </div>
         </nav>
@@ -204,6 +283,58 @@
             });
         })();
     </script>
+
+    <script>
+        // Mobile menu toggle: controls the small-screen hamburger menu
+        (function () {
+            var btn = document.getElementById('mobile-menu-button');
+            var menu = document.getElementById('mobile-menu');
+            var iconOpen = document.getElementById('icon-open');
+            var iconClose = document.getElementById('icon-close');
+            if (!btn || !menu) return;
+
+            function setExpanded(expanded) {
+                btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+                if (expanded) {
+                    menu.classList.remove('hidden');
+                    iconOpen.classList.add('hidden');
+                    iconClose.classList.remove('hidden');
+                } else {
+                    menu.classList.add('hidden');
+                    iconOpen.classList.remove('hidden');
+                    iconClose.classList.add('hidden');
+                }
+            }
+
+            btn.addEventListener('click', function (e) {
+                var expanded = btn.getAttribute('aria-expanded') === 'true';
+                setExpanded(!expanded);
+            });
+
+            // Close menu when clicking any link inside it (mobile behavior)
+            menu.addEventListener('click', function (e) {
+                var target = e.target;
+                while (target && target !== menu) {
+                    if (target.tagName === 'A') {
+                        setExpanded(false);
+                        break;
+                    }
+                    target = target.parentNode;
+                }
+            });
+
+            // Optional: close menu on escape key
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    setExpanded(false);
+                }
+            });
+
+            // Initialize state (ensure it's hidden when JS loads)
+            setExpanded(false);
+        })();
+    </script>
+    <script src="{% static 'js/avatar.js' %}"></script>
     <script src="{% static 'js/theme-toggle.js' %}"></script>
 </body>
 

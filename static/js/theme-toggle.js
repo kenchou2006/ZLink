@@ -20,11 +20,32 @@
       docEl.classList.remove('dark');
     }
     // update icons and aria on any toggle buttons
+    const stored = localStorage.getItem(STORAGE_KEY);
     document.querySelectorAll('[data-theme-toggle]').forEach(function (btn) {
       const darkIcon = btn.querySelector('[data-theme-icon="dark"]');
       const lightIcon = btn.querySelector('[data-theme-icon="light"]');
-      if (darkIcon) darkIcon.classList.toggle('hidden', theme !== 'dark');
-      if (lightIcon) lightIcon.classList.toggle('hidden', theme === 'dark');
+      const systemIcon = btn.querySelector('[data-theme-icon="system"]');
+
+      // Show system icon only when the explicit stored preference is 'system'
+      if (systemIcon) {
+        if (stored === 'system') {
+          systemIcon.classList.remove('hidden');
+        } else {
+          systemIcon.classList.add('hidden');
+        }
+      }
+
+      // If stored is system we still want to reflect the CURRENT *effective* theme for aria-pressed,
+      // but we visually show the system icon instead of the light/dark icon to indicate 'follow system'.
+      if (stored === 'system') {
+        if (darkIcon) darkIcon.classList.add('hidden');
+        if (lightIcon) lightIcon.classList.add('hidden');
+      } else {
+        if (darkIcon) darkIcon.classList.toggle('hidden', theme !== 'dark');
+        if (lightIcon) lightIcon.classList.toggle('hidden', theme === 'dark');
+      }
+
+      // set aria-pressed based on effective theme (true when dark)
       btn.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
     });
 

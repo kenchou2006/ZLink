@@ -1,104 +1,128 @@
 // Avatar loader (Handling Custom Avatars)
 
-document.addEventListener('DOMContentLoaded', function () {
+function initAvatars() {
     const avatars = document.querySelectorAll('.user-avatar-img');
 
-    console.log('[Avatar] Found', avatars.length, 'avatar placeholders');
-
-    avatars.forEach((imgElement, index) => {
+    avatars.forEach((imgElement) => {
         try {
+            // Ensure image has an alt attribute
             const username = imgElement.dataset.username || '';
-            const customAvatarUrl = (imgElement.dataset.avatarUrl || '').trim();
+            try {
+                if (!imgElement.getAttribute('alt')) {
+                    imgElement.setAttribute('alt', username ? `${username}'s avatar` : 'User avatar');
+                }
+            } catch (e) { /* ignore */ }
 
-            // Build ui-avatars fallback (size and colors match template usage)
-            const uiAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=6366f1&color=fff&s=200`;
-
-            // Helper to set fallback once (avoid infinite retries)
-            function setFallback() {
-                if (imgElement.dataset.fallbackUsed === '1') return;
-                imgElement.dataset.fallbackUsed = '1';
-                imgElement.src = uiAvatar;
+            // Helper to show initials and hide image
+            function showInitials() {
+                try {
+                    imgElement.classList.add('hidden');
+                    const initials = imgElement.parentElement && imgElement.parentElement.querySelector('.user-avatar-initials');
+                    if (initials) initials.classList.remove('hidden');
+                } catch (e) { /* ignore */ }
             }
 
-            // Ensure we have handlers that will fallback when the real <img> fails
-            let timeoutHandle = null;
-            const onImgLoad = function () {
-                if (timeoutHandle) {
-                    clearTimeout(timeoutHandle);
-                    timeoutHandle = null;
-                }
-                // loaded successfully — nothing else to do
-                console.log(`[Avatar ${index}] <img> loaded successfully`);
-            };
-            const onImgError = function () {
-                if (timeoutHandle) {
-                    clearTimeout(timeoutHandle);
-                    timeoutHandle = null;
-                }
-                console.log(`[Avatar ${index}] <img> error — applying ui-avatar fallback`);
-                setFallback();
-            };
+            // Helper to show image and hide initials
+            function showImage() {
+                try {
+                    imgElement.classList.remove('hidden');
+                    const initials = imgElement.parentElement && imgElement.parentElement.querySelector('.user-avatar-initials');
+                    if (initials) initials.classList.add('hidden');
+                } catch (e) { /* ignore */ }
+            }
 
-            // Attach handlers once
-            imgElement.addEventListener('load', onImgLoad);
-            imgElement.addEventListener('error', onImgError);
+            // By default: show initials to avoid broken-image icons
+            showInitials();
 
-            // If a custom URL exists, set it immediately (so the browser will render it while we watch for load/error)
-            if (customAvatarUrl) {
-                console.log(`[Avatar ${index}] Using custom URL (apply immediately):`, customAvatarUrl);
-
-                // Start a timeout: if the image doesn't load within 3s, fall back
-                timeoutHandle = setTimeout(() => {
-                    console.log(`[Avatar ${index}] Load timeout, using fallback`);
-                    timeoutHandle = null;
-                    setFallback();
+            // Validation flow: validate a URL using a temporary Image before assigning to the DOM img
+            function validateAndApply(url, onSuccess, onFail) {
+                if (!url || !url.trim()) { if (typeof onFail === 'function') onFail(); return; }
+                const u = url.trim();
+                const validator = new Image();
+                let finished = false;
+                const timeout = setTimeout(() => {
+                    if (finished) return;
+                    finished = true;
+                    try { validator.onload = validator.onerror = null; } catch (e) {}
+                    if (typeof onFail === 'function') onFail();
                 }, 3000);
 
-                // Try setting the actual img src so the browser attempts to load it right away
-                imgElement.src = customAvatarUrl;
-            } else {
-                // No custom url: ensure img has a sensible src (keep the existing src if set, otherwise use uiAvatar)
-                if (!imgElement.src || imgElement.src.trim() === '') {
-                    imgElement.src = uiAvatar;
-                }
+                validator.onload = function () {
+                    if (finished) return;
+                    // ensure it's a real image (has dimensions)
+                    if (!validator.naturalWidth || !validator.naturalHeight) {
+                        finished = true;
+                        clearTimeout(timeout);
+                        try { validator.onload = validator.onerror = null; } catch (e) {}
+                        if (typeof onFail === 'function') onFail();
+                        return;
+                    }
+                    finished = true;
+                    clearTimeout(timeout);
+                    try { validator.onload = validator.onerror = null; } catch (e) {}
+                    if (typeof onSuccess === 'function') onSuccess(u);
+                };
+                validator.onerror = function () {
+                    if (finished) return;
+                    finished = true;
+                    clearTimeout(timeout);
+                    try { validator.onload = validator.onerror = null; } catch (e) {}
+                    if (typeof onFail === 'function') onFail();
+                };
+                // Start loading
+                try { validator.src = u; } catch (e) { clearTimeout(timeout); finished = true; if (typeof onFail === 'function') onFail(); }
             }
 
-            // Expose a simple updater so template inline handlers (or other scripts) can reuse logic
+            // Initial dataset-based apply (if data-avatar-url present)
+            try {
+                const starting = (imgElement.dataset.avatarUrl || '').trim();
+                if (starting) {
+                    // Validate before applying to avoid broken image icons
+                    validateAndApply(starting, (goodUrl) => {
+                        try {
+                            imgElement.src = goodUrl;
+                            showImage();
+                        } catch (e) { showInitials(); }
+                    }, () => {
+                        showInitials();
+                    });
+                } else {
+                    showInitials();
+                }
+            } catch (e) { showInitials(); }
+
+            // Expose a simple updater for interactive preview (used by profile page)
             imgElement.updateAvatarPreview = function (url) {
-                // Allow passing null/empty to revert to ui-avatar
                 const u = (url || '').trim();
                 if (!u) {
-                    setFallback();
+                    // clear and show initials
+                    try { imgElement.src = ''; } catch (e) {}
+                    showInitials();
                     return;
                 }
 
-                // Try the new URL quickly and swap if it loads
-                const tmp = new Image();
-                let done = false;
-                const tto = setTimeout(() => {
-                    if (!done) {
-                        done = true;
-                        setFallback();
+                validateAndApply(u, (goodUrl) => {
+                    try {
+                        imgElement.src = goodUrl;
+                        showImage();
+                    } catch (e) {
+                        showInitials();
                     }
-                }, 3000);
-
-                tmp.onload = function () {
-                    if (done) return;
-                    done = true;
-                    clearTimeout(tto);
-                    imgElement.dataset.avatarUrl = u;
-                    imgElement.src = u;
-                };
-                tmp.onerror = function () {
-                    if (done) return;
-                    done = true;
-                    clearTimeout(tto);
-                    setFallback();
-                };
-                tmp.src = u;
+                }, () => {
+                    showInitials();
+                });
             };
+
         } catch (err) {
-            console.error(`[Avatar ${index}] Error processing avatar:`, err);
+            // safe fallback: show initials
+            try { const initials = imgElement.parentElement && imgElement.parentElement.querySelector('.user-avatar-initials'); if (initials) initials.classList.remove('hidden'); imgElement.classList.add('hidden'); } catch (e) {}
+            console.error('Avatar init error:', err);
         }
     });
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAvatars);
+} else {
+    initAvatars();
+}
