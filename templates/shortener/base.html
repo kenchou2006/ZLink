@@ -1,6 +1,5 @@
 {% load static %}
 <!DOCTYPE html>
-{# Add data-server-theme when user is authenticated so client JS can prefer server-side setting #}
 {% if user.is_authenticated %}
 <html lang="en" class="h-full" data-server-theme="{{ user.profile.theme_preference|default:'system' }}">
 {% else %}

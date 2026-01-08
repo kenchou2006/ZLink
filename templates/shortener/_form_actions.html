@@ -1,8 +1,8 @@
-{% comment %}Reusable form actions. Expect: primary_label, primary_name/value (optional), secondary_url/label (optional), align ('left'/'right').{% endcomment %}
+{% with pad_class|default:'pt-4' as pad %}
 {% if align == 'left' %}
-<div class="flex items-center gap-x-6 pt-4">
+<div class="flex items-center gap-x-6 {{ pad }} {{ extra_classes|default:'' }}">
 {% else %}
-<div class="flex items-center justify-end gap-x-6 pt-4">
+<div class="flex items-center justify-end gap-x-6 {{ pad }} {{ extra_classes|default:'' }}">
 {% endif %}
     {% if secondary_url and secondary_label %}
     <a href="{{ secondary_url }}"
@@ -13,4 +13,4 @@
         {{ primary_label }}
     </button>
 </div>
-
+{% endwith %}

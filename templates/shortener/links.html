@@ -11,23 +11,23 @@
     <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg mb-8">
         <div class="px-4 py-5 sm:p-6">
             <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Shorten a new link</h3>
-            <form method="POST" action="{% url 'create_link' %}" class="mt-5 sm:flex sm:items-center">
+            <form method="POST" action="{% url 'create_link' %}" class="mt-5 sm:flex sm:items-center sm:flex-nowrap sm:gap-3">
                 {% csrf_token %}
                 {% include 'shortener/_form_errors.html' with form=form %}
 
-                <div class="w-full sm:max-w-xs">
+                <div class="w-full sm:flex-1 sm:min-w-0">
                     <label for="original_url" class="sr-only">Original URL</label>
                     <input type="url" name="original_url" id="original_url" required
                         class="block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
                         placeholder="https://example.com/" value="{{ form.original_url.value|default:'' }}">
                 </div>
-                <div class="mt-3 w-full sm:mt-0 sm:ml-3 sm:max-w-xs">
+                <div class="mt-3 w-full sm:mt-0 sm:ml-3 sm:flex-1 sm:min-w-0">
                     <label for="custom_alias" class="sr-only">Custom Alias (Optional)</label>
                     <input type="text" name="custom_alias" id="custom_alias"
                         class="block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
                         placeholder="Custom Alias (optional)" value="{{ form.custom_alias.value|default:'' }}">
                 </div>
-                {% include 'shortener/_form_actions.html' with align='right' primary_label='Shorten' %}
+                {% include 'shortener/_form_actions.html' with align='right' primary_label='Shorten' pad_class='pt-0 sm:pt-0' extra_classes='w-full sm:w-auto sm:ml-3 sm:self-stretch mt-3 sm:mt-0' %}
             </form>
         </div>
     </div>

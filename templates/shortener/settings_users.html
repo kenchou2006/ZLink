@@ -39,82 +39,86 @@
     </div>
 
     <!-- Users Table -->
-    <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-        <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-            <thead class="bg-gray-50 dark:bg-gray-700">
-                <tr>
-                    <th scope="col"
-                        class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">
-                        User
-                    </th>
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                        Email</th>
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                        Role</th>
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                        Status</th>
-                    <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                        <span class="sr-only">Actions</span>
-                    </th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
-                {% for user_item in users %}
-                <tr class="dark:hover:bg-gray-700">
-                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
-                        <div class="flex items-center">
-                            <div class="h-10 w-10 flex-shrink-0">
-                                <img class="h-10 w-10 rounded-full object-cover user-avatar-img {% if not user_item.profile.avatar_url %}hidden{% endif %}"
-                                     data-avatar-url="{{ user_item.profile.avatar_url|default:'' }}"
-                                     data-username="{{ user_item.username|slice:':1'|upper }}"
-                                     alt="{{ user_item.username }}" src="">
-                                <div class="user-avatar-initials h-10 w-10 rounded-full bg-gray-100 dark:bg-gray-600 flex items-center justify-center text-sm font-semibold text-gray-700 dark:text-gray-100 {% if user_item.profile.avatar_url %}hidden{% endif %}">{{ user_item.username|slice:':1'|upper }}</div>
-                            </div>
-                            <div class="ml-4">
-                                <div class="font-medium text-gray-900 dark:text-white">
-                                    {{ user_item.username }}
-                                    {% if user_item == request.user %}
-                                    <span
-                                        class="ml-1 inline-flex items-center rounded-md bg-gray-50 dark:bg-gray-700 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-300 ring-1 ring-inset ring-gray-500/10 dark:ring-gray-300/10">You</span>
-                                    {% endif %}
-                                </div>
-                                <div class="text-gray-500 dark:text-gray-400">Joined {{ user_item.date_joined|date:"M d, Y" }}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                        {% if user_item.email %}
-                        {{ user_item.email }}
-                        {% else %}
-                        <span class="text-gray-400 italic">No email</span>
-                        {% endif %}
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                        {% if user_item.is_superuser %}
-                        <span
-                            class="inline-flex items-center rounded-md bg-purple-50 dark:bg-purple-900/50 px-2 py-1 text-xs font-medium text-purple-700 dark:text-purple-300 ring-1 ring-inset ring-purple-700/10 dark:ring-purple-700/30">Superuser</span>
-                        {% else %}
-                        <span
-                            class="inline-flex items-center rounded-md bg-gray-50 dark:bg-gray-700 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-300 ring-1 ring-inset ring-gray-500/10 dark:ring-gray-300/10">Admin</span>
-                        {% endif %}
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                        {% if user_item.is_active %}
-                        <span
-                            class="inline-flex items-center rounded-md bg-green-50 dark:bg-green-900/50 px-2 py-1 text-xs font-medium text-green-700 dark:text-green-300 ring-1 ring-inset ring-green-600/20 dark:ring-green-400/20">Active</span>
-                        {% else %}
-                        <span
-                            class="inline-flex items-center rounded-md bg-red-50 dark:bg-red-900/50 px-2 py-1 text-xs font-medium text-red-700 dark:text-red-300 ring-1 ring-inset ring-red-600/10 dark:ring-red-400/10">Inactive</span>
-                        {% endif %}
-                    </td>
-                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                        <a href="{% url 'edit_user' user_item.id %}"
-                            class="text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300">Edit<span class="sr-only">, {{ user_item.username }}</span></a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
+    <div class="overflow-x-auto sm:overflow-visible -mx-4 sm:mx-0">
+        <div class="inline-block min-w-full align-middle">
+            <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
+                 <thead class="bg-gray-50 dark:bg-gray-700">
+                     <tr>
+                         <th scope="col"
+                             class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">
+                             User
+                         </th>
+                         <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                             Email</th>
+                         <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                             Role</th>
+                         <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                             Status</th>
+                         <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                             <span class="sr-only">Actions</span>
+                         </th>
+                     </tr>
+                 </thead>
+                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
+                     {% for user_item in users %}
+                     <tr class="dark:hover:bg-gray-700">
+                         <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
+                             <div class="flex items-center">
+                                 <div class="h-10 w-10 flex-shrink-0">
+                                     <img class="h-10 w-10 rounded-full object-cover user-avatar-img {% if not user_item.profile.avatar_url %}hidden{% endif %}"
+                                          data-avatar-url="{{ user_item.profile.avatar_url|default:'' }}"
+                                          data-username="{{ user_item.username|slice:':1'|upper }}"
+                                          alt="{{ user_item.username }}" src="">
+                                     <div class="user-avatar-initials h-10 w-10 rounded-full bg-gray-100 dark:bg-gray-600 flex items-center justify-center text-sm font-semibold text-gray-700 dark:text-gray-100 {% if user_item.profile.avatar_url %}hidden{% endif %}">{{ user_item.username|slice:':1'|upper }}</div>
+                                 </div>
+                                 <div class="ml-4">
+                                     <div class="font-medium text-gray-900 dark:text-white">
+                                         {{ user_item.username }}
+                                         {% if user_item == request.user %}
+                                         <span
+                                             class="ml-1 inline-flex items-center rounded-md bg-gray-50 dark:bg-gray-700 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-300 ring-1 ring-inset ring-gray-500/10 dark:ring-gray-300/10">You</span>
+                                         {% endif %}
+                                     </div>
+                                     <div class="text-gray-500 dark:text-gray-400">Joined {{ user_item.date_joined|date:"M d, Y" }}</div>
+                                 </div>
+                             </div>
+                         </td>
+                         <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                             {% if user_item.email %}
+                             {{ user_item.email }}
+                             {% else %}
+                             <span class="text-gray-400 italic">No email</span>
+                             {% endif %}
+                         </td>
+                         <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                             {% if user_item.is_superuser %}
+                             <span
+                                 class="inline-flex items-center rounded-md bg-purple-50 dark:bg-purple-900/50 px-2 py-1 text-xs font-medium text-purple-700 dark:text-purple-300 ring-1 ring-inset ring-purple-700/10 dark:ring-purple-700/30">Superuser</span>
+                             {% else %}
+                             <span
+                                 class="inline-flex items-center rounded-md bg-gray-50 dark:bg-gray-700 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-300 ring-1 ring-inset ring-gray-500/10 dark:ring-gray-300/10">Admin</span>
+                             {% endif %}
+                         </td>
+                         <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                             {% if user_item.is_active %}
+                             <span
+                                 class="inline-flex items-center rounded-md bg-green-50 dark:bg-green-900/50 px-2 py-1 text-xs font-medium text-green-700 dark:text-green-300 ring-1 ring-inset ring-green-600/20 dark:ring-green-400/20">Active</span>
+                             {% else %}
+                             <span
+                                 class="inline-flex items-center rounded-md bg-red-50 dark:bg-red-900/50 px-2 py-1 text-xs font-medium text-red-700 dark:text-red-300 ring-1 ring-inset ring-red-600/10 dark:ring-red-400/10">Inactive</span>
+                             {% endif %}
+                         </td>
+                         <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                             <a href="{% url 'edit_user' user_item.id %}"
+                                 class="text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300">Edit<span class="sr-only">, {{ user_item.username }}</span></a>
+                         </td>
+                     </tr>
+                     {% endfor %}
+                 </tbody>
+                </table>
+            </div>
+        </div>
+     </div>
+ </div>
 {% endblock %}
