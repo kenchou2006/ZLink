@@ -184,6 +184,9 @@ def redirect_to_original(request, short_code):
 def dashboard(request):
     links = Link.objects.all().order_by('-created_at')
     form = LinkCreateForm()
+    hx_target = request.headers.get('HX-Target')
+    if request.headers.get('HX-Request') and hx_target == 'links-table':
+        return render(request, 'shortener/_links_table.html', {'links': links, 'scheme': request.scheme, 'host': request.get_host()})
     return render(request, 'shortener/links.html', {'links': links, 'section': 'links', 'form': form})
 
 
@@ -202,13 +205,14 @@ def create_link(request):
                 messages.success(request, f"Link created with alias: {custom_alias}")
             else:
                 messages.success(request, f"Link created: {link.short_code}")
-            return redirect('dashboard')
         except Exception as e:
             messages.error(request, f"Error creating link: {str(e)}")
     else:
         messages.error(request, _errors_to_message(form))
 
     links = Link.objects.all().order_by('-created_at')
+    if request.headers.get('HX-Request'):
+        return render(request, 'shortener/_links_table.html', {'links': links, 'scheme': request.scheme, 'host': request.get_host()})
     return render(request, 'shortener/links.html', {'links': links, 'section': 'links', 'form': form})
 
 @superuser_required

@@ -11,7 +11,7 @@
     <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg mb-8">
         <div class="px-4 py-5 sm:p-6">
             <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Shorten a new link</h3>
-            <form method="POST" action="{% url 'create_link' %}" class="mt-5 sm:flex sm:items-center sm:flex-nowrap sm:gap-3">
+            <form method="POST" action="{% url 'create_link' %}" class="mt-5 sm:flex sm:items-center sm:flex-nowrap sm:gap-3" hx-post="{% url 'create_link' %}" hx-target="#links-table" hx-swap="outerHTML" hx-vals='{"from": "form"}'>
                 {% csrf_token %}
                 {% include 'shortener/_form_errors.html' with form=form %}
 
@@ -32,8 +32,6 @@
         </div>
     </div>
 
-    <div class="overflow-hidden bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-        {% include 'shortener/_links_table.html' with links=links scheme=request.scheme host=request.get_host %}
-    </div>
+    {% include 'shortener/_links_table.html' with links=links scheme=request.scheme host=request.get_host %}
 </div>
 {% endblock %}
