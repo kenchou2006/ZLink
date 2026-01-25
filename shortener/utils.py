@@ -2,7 +2,7 @@ from django.urls import resolve, Resolver404
 from .models import Link
 
 RESERVED_ALIASES = {
-    'links', 'login', 'logout', 'create', 'delete', 'settings', 'admin', 'static', 'cache', 'users', '@root', '/',
+    'links', 'login', 'logout', 'create', 'delete', 'settings', 'admin', 'static', 'cache', 'users'
 }
 RESERVED_PREFIXES = (
     'settings/', 'delete/', 'users/', 'cache/', 'links/',
@@ -49,7 +49,6 @@ def validate_short_code(short_code: str, exclude_link_id=None) -> str | None:
 
 def link_cache_key(short_code):
     return f"shortener:url:{short_code}"
-
 
 def get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
