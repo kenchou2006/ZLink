@@ -1,4 +1,4 @@
-python3 -m pip install uv
+#python3 -m pip install uv
 
 uv venv
 uv pip install -r requirements.txt
