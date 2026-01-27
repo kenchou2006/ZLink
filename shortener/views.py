@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.core.cache import cache
 from django_redis import get_redis_connection
 from django.contrib import messages
+from django.urls import reverse
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
@@ -174,6 +175,9 @@ def delete_link(request, link_id):
         link = get_object_or_404(Link, id=link_id)
         service_delete_link(link)
         messages.success(request, "Link deleted.")
+        if request.headers.get('HX-Request'):
+            dashboard_url = reverse('dashboard')
+            return HttpResponse('', headers={'HX-Redirect': dashboard_url})
     return redirect('dashboard')
 
 
@@ -212,7 +216,8 @@ def create_link(request):
 
     links = Link.objects.all().order_by('-created_at')
     if request.headers.get('HX-Request'):
-        return render(request, 'shortener/_links_table.html', {'links': links, 'scheme': request.scheme, 'host': request.get_host()})
+        dashboard_url = reverse('dashboard')
+        return HttpResponse('', headers={'HX-Redirect': dashboard_url})
     return render(request, 'shortener/links.html', {'links': links, 'section': 'links', 'form': form})
 
 @superuser_required
@@ -322,6 +327,9 @@ def edit_user(request, user_id):
             username = user_to_edit.username
             user_to_edit.delete()
             messages.success(request, f"User {username} deleted.")
+            if request.headers.get('HX-Request'):
+                settings_url = reverse('settings_users')
+                return HttpResponse('', headers={'HX-Redirect': settings_url})
             return redirect('settings_users')
 
         form = AdminUserUpdateForm(request.POST, user_id=user_id)
@@ -371,6 +379,9 @@ def edit_link(request, link_id):
         if action == 'delete':
             service_delete_link(link)
             messages.success(request, "Link deleted.")
+            if request.headers.get('HX-Request'):
+                dashboard_url = reverse('dashboard')
+                return HttpResponse('', headers={'HX-Redirect': dashboard_url})
             return redirect('dashboard')
             
         if form.is_valid():
