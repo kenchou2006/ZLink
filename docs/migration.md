@@ -198,7 +198,7 @@ flowchart TD
     CheckExp1 -- 是 --> DelCache["刪除快取"] --> Return404
     CheckExp1 -- 否 --> SecurityCheck1{"驗證 URL 是否為 http/https"}
     SecurityCheck1 -- 合法 --> AsyncGA1["ctx.waitUntil 送出 GA4 事件 (source=cache)"]
-    AsyncGA1 --> Redirect302["回傳 HTTP 302 轉址<br/>Cache-Control: public, max-age=30"]
+    AsyncGA1 --> Redirect302["回傳 HTTP 302 轉址<br/>Cache-Control: no-store（預設）"]
     
     CacheCheck -- 未命中 (Miss) --> D1Check{"查詢 D1 links 表"}
     D1Check -- 查無資料 --> Return404
@@ -216,4 +216,8 @@ flowchart TD
   - 若連結設有 `expires_at`，KV 快取存活時間設為該過期時間；到期後自動失效。
   - 若為無期限短網址，KV 鍵值永久保存，直至管理介面修改或刪除時被即時剔除。
 - **瀏覽器快取**：
-  - 302 轉址帶有標頭 `Cache-Control: public, max-age=30, s-maxage=30`，兼顧瀏覽器效能與短網址即時下線管理。
+  - 302 轉址預設帶 `Cache-Control: no-store`：修改或刪除連結後立即生效，每次點擊也都會送出 GA4 事件。
+  - 舊 Go 服務的 `public, s-maxage=30` 是為了讓 Vercel CDN 快取轉址；Cloudflare 不會把 Worker 回應存進 CDN，那個標頭只會讓瀏覽器與中間代理沿用舊網址，因此不沿用。
+  - 若想讓瀏覽器快取轉址，設定 `REDIRECT_CACHE_TTL`（秒，取代舊的 `EDGE_CACHE_TTL`），回應會變成 `private, max-age=N`，且不會超過連結的剩餘有效時間。
+- **KV 最終一致性**：修改或刪除連結時會立即刪除 KV 鍵，但其他機房最多約 60 秒才會看到刪除。
+- **管理介面清除快取**：列出鍵值時會分頁讀完整個 namespace；「全部清除」每次請求最多刪 900 個鍵（避開單次呼叫 1000 次 KV 操作上限），前端會自動重複呼叫直到清空。

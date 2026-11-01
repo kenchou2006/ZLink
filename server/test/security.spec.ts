@@ -175,7 +175,7 @@ describe("Security & Protection Tests", () => {
   });
 
   it("test_client_public_headers_contains_required_security_headers", () => {
-    expect(headersRaw).toContain("/admin/*");
+    expect(headersRaw).toContain("/__admin/*");
     expect(headersRaw).toContain("Content-Security-Policy");
     expect(headersRaw).toContain("default-src 'self'");
     expect(headersRaw).toContain("frame-ancestors 'none'");

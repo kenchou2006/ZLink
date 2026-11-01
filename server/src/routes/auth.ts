@@ -17,6 +17,7 @@ import { drfError, readJson } from "../lib/http";
 import { authMiddleware } from "../middleware/auth";
 import { rateLimit } from "../middleware/rateLimit";
 import { setSessionCookies, clearSessionCookies } from "../lib/session";
+import { resolveAppUrls } from "../lib/urls";
 
 export const authRoutes = new Hono<AppEnv>();
 
@@ -247,23 +248,23 @@ authRoutes.get("/me", authMiddleware(), async (c) => {
 
 // Passkeys endpoints
 export function webAuthnConfig(reqUrl: string, env: AppEnv["Bindings"]) {
-  const url = new URL(reqUrl);
-  const rpID = env.WEBAUTHN_RP_ID || url.hostname;
+  const urls = resolveAppUrls(env, reqUrl);
+  const rpID = env.WEBAUTHN_RP_ID || urls.adminHostname;
   const rpName = env.WEBAUTHN_RP_NAME || "ZLink";
 
   const isDevOrTest =
     env.ENVIRONMENT === "development" || env.ENVIRONMENT === "test";
 
-  // Read origins only from config: dedicated variable (WEBAUTHN_ORIGINS / WEBAUTHN_ORIGIN) or SITE_ORIGIN
+  // Read origins only from config: dedicated variable (WEBAUTHN_ORIGINS / WEBAUTHN_ORIGIN) or ADMIN_URL
   const rawOrigins =
-    env.WEBAUTHN_ORIGINS || env.WEBAUTHN_ORIGIN || env.SITE_ORIGIN || "";
+    env.WEBAUTHN_ORIGINS || env.WEBAUTHN_ORIGIN || urls.adminOrigin || "";
 
   const candidates = rawOrigins
     ? rawOrigins
         .split(",")
         .map((o) => o.trim())
         .filter(Boolean)
-    : [url.origin];
+    : [urls.adminOrigin];
 
   const expectedOrigins = candidates.filter((originStr) => {
     try {

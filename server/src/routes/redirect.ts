@@ -3,12 +3,13 @@ import { eq } from "drizzle-orm";
 import type { AppEnv } from "../env";
 import { createDb, links } from "../db";
 import {
-  RESERVED_ALIASES,
   normalizeShortCode,
   isValidHttpUrl,
   linkCacheKey,
   getCacheKeyVariants,
+  getReservedWords,
 } from "../lib/utils";
+import { resolveAppUrls } from "../lib/urls";
 import { sendGA4Event } from "../lib/ga4";
 
 export const redirectRoutes = new Hono<AppEnv>();
@@ -98,10 +99,11 @@ export function render404(): Response {
   });
 }
 
-function fullShortURL(c: Context<AppEnv>): string {
-  const origin = c.env.SITE_ORIGIN || new URL(c.req.url).origin;
-  const path = c.req.path || "/";
-  return `${origin.replace(/\/+$/, "")}${path}`;
+function fullShortURL(c: Context<AppEnv>, code: string): string {
+  const urls = resolveAppUrls(c.env, c.req.url);
+  return code === "@root"
+    ? `${urls.shortLinkUrl}/`
+    : `${urls.shortLinkUrl}/${code}`;
 }
 
 async function runWaitUntil(
@@ -121,20 +123,13 @@ async function runWaitUntil(
   await promise;
 }
 
-async function handleRedirect(c: Context<AppEnv>, code: string) {
+export async function handleRedirect(c: Context<AppEnv>, code: string) {
   const normalized = normalizeShortCode(code);
   const lower = normalized.toLowerCase();
 
   // Reserved aliases handling
-  if (RESERVED_ALIASES.has(lower)) {
-    // If admin, serve the admin SPA
-    if (lower === "admin") {
-      if (c.env.ASSETS && typeof c.env.ASSETS.fetch === "function") {
-        return c.env.ASSETS.fetch(
-          new Request(new URL("/admin/index.html", c.req.url)),
-        );
-      }
-    }
+  const { aliases } = getReservedWords(c.env);
+  if (aliases.has(lower)) {
     return render404();
   }
 
@@ -172,7 +167,7 @@ async function handleRedirect(c: Context<AppEnv>, code: string) {
                 c.env,
                 c.req.raw,
                 cached.url,
-                fullShortURL(c),
+                fullShortURL(c, normalized),
                 "cache",
               ),
             );
@@ -250,7 +245,13 @@ async function handleRedirect(c: Context<AppEnv>, code: string) {
   // Report GA4 asynchronously via waitUntil
   runWaitUntil(
     c,
-    sendGA4Event(c.env, c.req.raw, link.originalUrl, fullShortURL(c), "db"),
+    sendGA4Event(
+      c.env,
+      c.req.raw,
+      link.originalUrl,
+      fullShortURL(c, normalized),
+      "db",
+    ),
   );
 
   return new Response(null, {

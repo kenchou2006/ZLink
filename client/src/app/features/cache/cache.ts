@@ -50,7 +50,7 @@ export class Cache implements OnInit {
       },
       error: (e) => {
         this.loading.set(false);
-        this.error.set(apiError(e, 'Redis is unavailable.'));
+        this.error.set(apiError(e, 'KV is unavailable.'));
         this.data.set([]);
       },
     });
@@ -71,7 +71,7 @@ export class Cache implements OnInit {
       .open(ConfirmDialog, {
         data: {
           title: 'Clear all cache',
-          message: 'Remove all cached short-link keys from Redis?',
+          message: 'Remove all cached short-link keys from KV?',
           confirmText: 'Clear all',
           destructive: true,
         },

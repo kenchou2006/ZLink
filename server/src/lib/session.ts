@@ -2,6 +2,7 @@ import type { Context, MiddlewareHandler } from "hono";
 import { getCookie, setCookie, deleteCookie } from "hono/cookie";
 import type { AppEnv } from "../env";
 import { drfError, isAllowedOrigin } from "./http";
+import { resolveAppUrls } from "./urls";
 
 export const ACCESS_COOKIE = "__Host-zl_at";
 export const REFRESH_COOKIE = "__Secure-zl_rt";
@@ -12,6 +13,9 @@ export function setSessionCookies(
   c: Context<AppEnv>,
   pair: { access: string; refresh: string },
 ): void {
+  const urls = resolveAppUrls(c.env, c.req.url);
+  const refreshPath = `${urls.adminBase}/api/auth/`;
+
   setCookie(c, ACCESS_COOKIE, pair.access, {
     httpOnly: true,
     secure: true,
@@ -23,14 +27,17 @@ export function setSessionCookies(
     httpOnly: true,
     secure: true,
     sameSite: "Strict",
-    path: "/api/auth/",
+    path: refreshPath,
     maxAge: REFRESH_MAX_AGE,
   });
 }
 
 export function clearSessionCookies(c: Context<AppEnv>): void {
+  const urls = resolveAppUrls(c.env, c.req.url);
+  const refreshPath = `${urls.adminBase}/api/auth/`;
+
   deleteCookie(c, ACCESS_COOKIE, { path: "/", secure: true });
-  deleteCookie(c, REFRESH_COOKIE, { path: "/api/auth/", secure: true });
+  deleteCookie(c, REFRESH_COOKIE, { path: refreshPath, secure: true });
 }
 
 export function accessTokenFrom(c: Context<AppEnv>): string | null {

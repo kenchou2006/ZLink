@@ -20,7 +20,9 @@ import {
   isValidHttpUrl,
   getCacheKeyVariants,
 } from "../lib/utils";
+import { resolveAppUrls } from "../lib/urls";
 import { generateShortCode } from "../lib/crypto";
+import { getBuildMeta } from "../lib/meta";
 
 export const linkRoutes = new Hono<AppEnv>();
 
@@ -31,8 +33,8 @@ function getShortUrl(
   reqUrl: string,
   code: string,
 ): string {
-  const origin = env.SITE_ORIGIN || new URL(reqUrl).origin;
-  return `${origin.replace(/\/+$/, "")}/${code}`;
+  const urls = resolveAppUrls(env, reqUrl);
+  return `${urls.shortLinkUrl}/${code}`;
 }
 
 function formatLink(env: AppEnv["Bindings"], reqUrl: string, link: Link) {
@@ -198,7 +200,14 @@ linkRoutes.post("/", async (c) => {
   let shortCode = "";
 
   if (rawAlias) {
-    const err = validateShortCodeFormat(rawAlias);
+    const urls = resolveAppUrls(c.env);
+    const meta =
+      urls.adminBase === "" ? await getBuildMeta(c.env, c.req.url) : null;
+    const err = validateShortCodeFormat(
+      rawAlias,
+      c.env,
+      meta?.rootReservedNames,
+    );
     if (err) {
       drfError(400, err, { short_code: [err] });
     }
@@ -300,7 +309,14 @@ const handleUpdate = async (c: any) => {
   if (body.short_code !== undefined) {
     const rawAlias = String(body.short_code).trim();
     if (rawAlias && rawAlias !== current.shortCode) {
-      const err = validateShortCodeFormat(rawAlias);
+      const urls = resolveAppUrls(c.env);
+      const meta =
+        urls.adminBase === "" ? await getBuildMeta(c.env, c.req.url) : null;
+      const err = validateShortCodeFormat(
+        rawAlias,
+        c.env,
+        meta?.rootReservedNames,
+      );
       if (err) {
         drfError(400, err, { short_code: [err] });
       }

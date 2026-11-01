@@ -10,6 +10,8 @@ export interface Env {
   // Vars
   ENVIRONMENT: string;
   SITE_ORIGIN?: string;
+  SHORT_LINK_URL?: string;
+  ADMIN_URL?: string;
   ALLOWED_ORIGINS?: string;
   WEBAUTHN_RP_ID?: string;
   WEBAUTHN_RP_NAME?: string;

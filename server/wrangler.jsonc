@@ -11,8 +11,9 @@
   "assets": {
     "directory": "../client/dist/browser",
     "binding": "ASSETS",
+    "html_handling": "none",
     "not_found_handling": "none",
-    "run_worker_first": ["/api/*"]
+    "run_worker_first": ["/api/*", "/__admin/*"]
   },
 
   // Databases: D1 for links, users, api keys, passkeys, sessions
@@ -55,6 +56,9 @@
   // Environment variables (public / non-secret)
   "vars": {
     "ENVIRONMENT": "production",
+    // Short link service URL and Admin interface URL (replaces SITE_ORIGIN, which is retained for backward compatibility)
+    "SHORT_LINK_URL": "https://zlink.example.com",
+    "ADMIN_URL": "https://zlink.example.com/admin",
     "SITE_ORIGIN": "https://zlink.example.com",
     "ALLOWED_ORIGINS": "",
     "WEBAUTHN_RP_NAME": "ZLink",

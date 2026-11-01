@@ -1,0 +1,9 @@
+{
+  "basePath": "/admin",
+  "builtAt": "2026-11-01T00:00:00.000Z",
+  "rootReservedNames": [
+    "favicon.ico",
+    "i18n",
+    "main.js"
+  ]
+}

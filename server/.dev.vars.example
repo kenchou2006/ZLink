@@ -5,7 +5,12 @@
 ENVIRONMENT=development
 # Master secret for JWT & HKDF key derivation (at least 32 characters)
 SECRET_KEY=dev-secret-key-must-be-at-least-32-characters-long-example
-SITE_ORIGIN=http://localhost:8787
+
+# Service URLs (SHORT_LINK_URL and ADMIN_URL replace SITE_ORIGIN; SITE_ORIGIN is retained for backward compatibility)
+SHORT_LINK_URL=http://localhost:8787
+ADMIN_URL=http://localhost:8787/admin
+# SITE_ORIGIN=http://localhost:8787
+
 ALLOWED_ORIGINS=http://localhost:4200,http://127.0.0.1:4200
 
 # Optional GA4 click tracking

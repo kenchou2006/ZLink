@@ -4,12 +4,11 @@
   "scripts": {
     "ng": "ng",
     "start": "node scripts/apply-env-to-angular.mjs && ng serve",
-    "build": "ng build",
+    "build": "node scripts/build.mjs",
+    "build:local": "node scripts/build.mjs --local",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "prestart": "node scripts/apply-env-to-angular.mjs && node scripts/generate-config.mjs",
-    "prebuild": "node scripts/apply-env-to-angular.mjs && node scripts/generate-config.mjs",
-    "postbuild": "node scripts/prepare-dist.mjs"
+    "prestart": "node scripts/apply-env-to-angular.mjs && node scripts/generate-config.mjs"
   },
   "prettier": {
     "printWidth": 100,

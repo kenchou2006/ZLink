@@ -1,6 +1,7 @@
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { HTTPException } from "hono/http-exception";
 import type { z } from "zod";
+import { resolveAppUrls, type EnvUrlsLike } from "./urls";
 
 export function drfError(
   status: ContentfulStatusCode,
@@ -68,7 +69,7 @@ export function isLocalhostOrigin(origin: string): boolean {
 
 export function isAllowedOrigin(
   origin: string | undefined | null,
-  env: { ENVIRONMENT?: string; ALLOWED_ORIGINS?: string },
+  env: { ENVIRONMENT?: string; ALLOWED_ORIGINS?: string } & EnvUrlsLike,
   requestUrl: string,
 ): boolean {
   if (!origin) return false;
@@ -79,6 +80,11 @@ export function isAllowedOrigin(
   // In production, reject localhost origins unconditionally
   if (!isDevOrTest && isLocalhostOrigin(origin)) {
     return false;
+  }
+
+  const urls = resolveAppUrls(env, requestUrl);
+  if (origin === urls.adminOrigin) {
+    return true;
   }
 
   const requestOrigin = new URL(requestUrl).origin;

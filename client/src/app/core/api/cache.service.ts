@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { EMPTY, Observable, expand, reduce } from 'rxjs';
 import { ConfigService } from '../config.service';
 import { CacheKeysResponse } from '../models';
 
@@ -22,7 +22,13 @@ export class CacheService {
     });
   }
 
+  /** The server clears at most 900 keys per call; keep calling until nothing is left. */
   clearAll(): Observable<{ cleared: number }> {
-    return this.http.post<{ cleared: number }>(`${this.base}/clear/`, {});
+    const clearBatch = () =>
+      this.http.post<{ cleared: number; has_more?: boolean }>(`${this.base}/clear/`, {});
+    return clearBatch().pipe(
+      expand((res) => (res.has_more && res.cleared > 0 ? clearBatch() : EMPTY)),
+      reduce((total, res) => ({ cleared: total.cleared + res.cleared }), { cleared: 0 }),
+    );
   }
 }

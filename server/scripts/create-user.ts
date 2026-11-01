@@ -1,3 +1,18 @@
+/**
+ * Create (or reset) an activated account directly in D1, skipping email activation.
+ * For local development, and for a deployment's first admin.
+ *
+ *   npm run user:create -- <username> [--email <email>] [--staff] [--superuser] [--remote]
+ *
+ * Running the script again with an existing username resets their password
+ * and reactivates the account. Roles are only updated if --staff or --superuser
+ * is explicitly provided.
+ *
+ * The password is asked for without echoing it (or read from the
+ * CREATE_USER_PASSWORD environment variable for scripts), so it never lands
+ * in an argument list or the shell history. It is hashed with the server's
+ * own src/lib/crypto.ts, so the stored hash is exactly what sign-in checks.
+ */
 import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -11,12 +26,11 @@ function fail(message: string): never {
 function parseArgs(argv: string[]) {
   const out: {
     username?: string;
-    email: string;
-    isSuperUser: boolean;
+    email?: string;
+    isSuperUser?: boolean;
+    isStaff?: boolean;
     remote: boolean;
   } = {
-    email: "",
-    isSuperUser: false,
     remote: false,
   };
 
@@ -25,6 +39,7 @@ function parseArgs(argv: string[]) {
     const value = () => argv[++i] ?? fail(`${arg} needs a value`);
     if (arg === "--email") out.email = value();
     else if (arg === "--superuser") out.isSuperUser = true;
+    else if (arg === "--staff") out.isStaff = true;
     else if (arg === "--remote") out.remote = true;
     else if (arg.startsWith("--")) fail(`unknown option ${arg}`);
     else if (!out.username) out.username = arg;
@@ -33,7 +48,7 @@ function parseArgs(argv: string[]) {
 
   if (!out.username) {
     fail(
-      "usage: npm run user:create -- <username> [--email E] [--superuser] [--remote]",
+      "usage: npm run user:create -- <username> [--email <email>] [--staff] [--superuser] [--remote]",
     );
   }
 
@@ -90,12 +105,25 @@ if (password.length < 8) fail("the password needs at least 8 characters");
 const hash = await hashPassword(password);
 const now = new Date().toISOString();
 const email = args.email || `${args.username}@example.com`;
-const isSuper = args.isSuperUser ? 1 : 0;
+
+const hasRoleFlag =
+  args.isSuperUser !== undefined || args.isStaff !== undefined;
+const initialSuper = args.isSuperUser ? 1 : 0;
+const initialStaff = args.isSuperUser || args.isStaff ? 1 : 0;
+
+let roleUpdateSql = "";
+if (hasRoleFlag) {
+  roleUpdateSql = `, is_staff = ${initialStaff}, is_superuser = ${initialSuper}`;
+}
+let emailUpdateSql = "";
+if (args.email) {
+  emailUpdateSql = `, email = ${sqlStr(args.email)}`;
+}
 
 const statement = `
 INSERT INTO users (username, email, password, is_staff, is_superuser, is_active, date_joined, last_login)
-VALUES (${sqlStr(args.username)}, ${sqlStr(email)}, ${sqlStr(hash)}, 1, ${isSuper}, 1, ${sqlStr(now)}, NULL)
-ON CONFLICT(username) DO UPDATE SET password = excluded.password, is_active = 1, is_staff = 1, is_superuser = excluded.is_superuser;
+VALUES (${sqlStr(args.username)}, ${sqlStr(email)}, ${sqlStr(hash)}, ${initialStaff}, ${initialSuper}, 1, ${sqlStr(now)}, NULL)
+ON CONFLICT(username) DO UPDATE SET password = excluded.password, is_active = 1${roleUpdateSql}${emailUpdateSql};
 
 INSERT OR IGNORE INTO profiles (user_id, avatar_url, password_login_disabled)
 SELECT id, NULL, 0 FROM users WHERE username = ${sqlStr(args.username)};
@@ -122,6 +150,10 @@ const result = spawnSync(
 
 if (result.status !== 0)
   fail(`wrangler d1 execute failed (exit ${result.status})`);
+
+const roleDesc = hasRoleFlag
+  ? `staff: ${Boolean(initialStaff)}, superuser: ${Boolean(initialSuper)}`
+  : "kept existing role";
 console.log(
-  `User '${args.username}': active staff (superuser: ${Boolean(isSuper)}), ${args.remote ? "remote" : "local"} D1. Ready to sign in.`,
+  `User '${args.username}': active (${roleDesc}), ${args.remote ? "remote" : "local"} D1. Sign in with the password you entered.`,
 );

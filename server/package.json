@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "wrangler dev --port 8787 --test-scheduled",
     "build:fe": "npm --prefix ../client run build",
-    "start": "npm run build:fe && npm run dev",
+    "build:fe:local": "npm --prefix ../client run build:local",
+    "start": "npm run build:fe:local && npm run dev",
+    "deploy": "npm run build:fe && wrangler d1 migrations apply zlink --remote && wrangler deploy",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" \"scripts/**/*.ts\"",
@@ -25,6 +27,7 @@
   "devDependencies": {
     "@cloudflare/vitest-plugin": "^1.4.0",
     "@cloudflare/workers-types": "^5.20261012.1",
+    "@types/node": "^26.6.6",
     "drizzle-kit": "^0.31.11",
     "prettier": "^3.9.10",
     "typescript": "^7.0.2",

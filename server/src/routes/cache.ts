@@ -10,7 +10,9 @@ cacheRoutes.use("*", authMiddleware(), requireSuperUser());
 const CLEAR_LIMIT = 900;
 
 /** All keys in the namespace; `list()` returns at most 1000 per page. */
-async function listAllKeys(kv: KVNamespace): Promise<KVNamespaceListKey<unknown>[]> {
+async function listAllKeys(
+  kv: KVNamespace,
+): Promise<KVNamespaceListKey<unknown>[]> {
   const keys: KVNamespaceListKey<unknown>[] = [];
   let cursor: string | undefined;
   do {
@@ -86,7 +88,10 @@ cacheRoutes.post("/clear", async (c) => {
     for (let i = 0; i < batch.length; i += 50) {
       await Promise.all(batch.slice(i, i + 50).map((k) => kv.delete(k.name)));
     }
-    return c.json({ cleared: batch.length, has_more: allKeys.length > batch.length });
+    return c.json({
+      cleared: batch.length,
+      has_more: allKeys.length > batch.length,
+    });
   } catch (e) {
     return c.json({ detail: String(e) }, 503);
   }

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { env } from "cloudflare:workers";
 import { call, clearAll } from "./helpers";
+import { redirectCacheControl } from "../src/routes/redirect";
 
 describe("Redirect Hot Path (GET /{code} and GET /)", () => {
   beforeEach(async () => {
@@ -127,7 +128,9 @@ describe("redirectCacheControl", () => {
     expect(redirectCacheControl("60", 0, now)).toBe("private, max-age=60");
   });
   it("never caches past the link's expiry", () => {
-    expect(redirectCacheControl("60", now + 10, now)).toBe("private, max-age=10");
+    expect(redirectCacheControl("60", now + 10, now)).toBe(
+      "private, max-age=10",
+    );
     expect(redirectCacheControl("60", now, now)).toBe("no-store");
   });
 });

@@ -1,0 +1,15 @@
+/__admin/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+
+/admin/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+
+/zlink/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY

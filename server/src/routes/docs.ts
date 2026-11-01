@@ -1,9 +1,11 @@
 import { Hono } from "hono";
 import type { AppEnv } from "../env";
+import { resolveAppUrls } from "../lib/urls";
 
 export const docsRoutes = new Hono<AppEnv>();
 
 docsRoutes.get("/schema", (c) => {
+  const urls = resolveAppUrls(c.env, c.req.url);
   return c.json({
     openapi: "3.0.3",
     info: {
@@ -12,6 +14,12 @@ docsRoutes.get("/schema", (c) => {
       description:
         "Management API for the ZLink URL shortener (Cloudflare Worker Edition).",
     },
+    servers: [
+      {
+        url: `${urls.adminBase}/api`,
+        description: "Management API",
+      },
+    ],
     paths: {
       "/api/healthz/": { get: { summary: "Health check" } },
       "/api/auth/login/": { post: { summary: "User login" } },
@@ -65,6 +73,8 @@ docsRoutes.get("/schema", (c) => {
 });
 
 docsRoutes.get("/docs", (c) => {
+  const urls = resolveAppUrls(c.env, c.req.url);
+  const schemaUrl = `${urls.adminBase}/api/schema`;
   return c.html(`<!DOCTYPE html>
 <html>
 <head>
@@ -79,7 +89,7 @@ docsRoutes.get("/docs", (c) => {
   <script>
     window.onload = () => {
       window.ui = SwaggerUIBundle({
-        url: '/api/schema/',
+        url: '${schemaUrl}',
         dom_id: '#swagger-ui',
       });
     };

@@ -71,6 +71,34 @@ describe("Cache API (recreating Django CacheKeysView & CacheClearView)", () => {
     expect(check2).toBeNull();
   });
 
+  it("lists and clears past the 1000-key page limit", async () => {
+    const root = await createUser({ username: "root", isSuperUser: true });
+    const total = 1205;
+    for (let i = 0; i < total; i += 100) {
+      await Promise.all(
+        Array.from({ length: Math.min(100, total - i) }, (_, j) =>
+          env.KV.put(`shortener:url:bulk${i + j}`, "{}"),
+        ),
+      );
+    }
+
+    const listData = (await (
+      await call("/api/cache/keys/", { token: root.token })
+    ).json()) as any;
+    expect(listData.keys.length).toBe(total);
+
+    const first = (await (
+      await call("/api/cache/clear/", { method: "POST", token: root.token })
+    ).json()) as any;
+    expect(first).toEqual({ cleared: 900, has_more: true });
+
+    const second = (await (
+      await call("/api/cache/clear/", { method: "POST", token: root.token })
+    ).json()) as any;
+    expect(second).toEqual({ cleared: total - 900, has_more: false });
+    expect((await env.KV.list()).keys.length).toBe(0);
+  });
+
   it("test_non_superuser_forbidden_from_cache", async () => {
     const staff = await createUser({
       username: "staff",
