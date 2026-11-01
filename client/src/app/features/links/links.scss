@@ -1,0 +1,19 @@
+.search {
+  flex: 1 1 220px;
+  max-width: 360px;
+}
+
+.select-col {
+  width: 48px;
+}
+
+.url-cell {
+  max-width: 360px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.expired {
+  color: var(--mat-sys-error);
+}

@@ -1,0 +1,46 @@
+@if (created(); as key) {
+  <h2 mat-dialog-title>{{ 'API_KEYS.DIALOG_CREATED' | translate }}</h2>
+  <mat-dialog-content>
+    <p class="warn-text">
+      <mat-icon>warning</mat-icon>
+      {{ 'API_KEYS.WARN_COPY' | translate }}
+    </p>
+    <div class="key-box">
+      <code>{{ key.key }}</code>
+      <button mat-icon-button (click)="copy()" [attr.aria-label]="'Copy key'">
+        <mat-icon>{{ copied() ? 'check' : 'content_copy' }}</mat-icon>
+      </button>
+    </div>
+    <p class="hint">
+      {{ 'API_KEYS.HINT' | translate }}
+    </p>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-flat-button color="primary" (click)="done()">{{ 'API_KEYS.DONE' | translate }}</button>
+  </mat-dialog-actions>
+} @else {
+  <h2 mat-dialog-title>{{ 'API_KEYS.DIALOG_CREATE' | translate }}</h2>
+  <mat-dialog-content>
+    <form [formGroup]="form" class="dialog-form">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>{{ 'API_KEYS.NAME' | translate }}</mat-label>
+        <input matInput formControlName="name" [placeholder]="'API_KEYS.NAME_PLACEHOLDER' | translate" />
+      </mat-form-field>
+
+      <mat-checkbox formControlName="neverExpires">{{ 'API_KEYS.NEVER_EXPIRES' | translate }}</mat-checkbox>
+
+      @if (!form.controls.neverExpires.value) {
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ 'API_KEYS.EXPIRES_AT' | translate }}</mat-label>
+          <input matInput type="datetime-local" formControlName="expiresAt" />
+        </mat-form-field>
+      }
+    </form>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button [mat-dialog-close]="null">{{ 'API_KEYS.CANCEL' | translate }}</button>
+    <button mat-flat-button color="primary" (click)="save()" [disabled]="saving() || form.invalid">
+      {{ 'API_KEYS.CREATE' | translate }}
+    </button>
+  </mat-dialog-actions>
+}

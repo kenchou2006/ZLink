@@ -1,0 +1,182 @@
+@use '@angular/material' as mat;
+
+html {
+  color-scheme: light dark;
+  @include mat.theme((
+    color: mat.$azure-palette,
+    typography: Roboto,
+    density: 0,
+  ));
+
+  // Custom dark/light toggle via data-theme on <html>.
+  &[data-theme='light'] { color-scheme: light; }
+  &[data-theme='dark'] { color-scheme: dark; }
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
+  background: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+}
+
+.full-width { width: 100%; }
+.spacer { flex: 1 1 auto; }
+
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+
+  h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Page header: "h1 + subtitle" on the left, primary page actions on the right.
+// Establishes the top level of the page hierarchy; blocks below it follow a
+// 24px vertical rhythm.
+// ---------------------------------------------------------------------------
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.page-subtitle {
+  margin: 4px 0 0;
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  max-width: 720px;
+}
+
+.page-header-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+// ---------------------------------------------------------------------------
+// Table card: wraps a data table and its toolbar in one contained surface so
+// the data area reads as a single visual unit instead of blending into the
+// page background. Used by the links / users / api-keys / cache pages.
+// ---------------------------------------------------------------------------
+.table-card {
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 12px;
+  background: var(--mat-sys-surface-container-low);
+  overflow-x: auto;
+
+  --mat-table-background-color: transparent;
+
+  th.mat-mdc-header-cell {
+    color: var(--mat-sys-on-surface-variant);
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .empty {
+    margin: 0;
+  }
+}
+
+// Filter row that sits inside a .table-card, above the table.
+.table-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  min-height: 64px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+// Swapped in for the filter toolbar while rows are selected: the whole bar
+// becomes the bulk-action context instead of buttons popping into the filters.
+.selection-bar {
+  background: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+}
+
+.selection-count {
+  font-weight: 500;
+}
+
+// Table cell hierarchy: the row's key identifier vs. secondary metadata
+// (timestamps, TTLs) that shouldn't compete with it.
+.cell-primary {
+  font-weight: 500;
+}
+
+td.cell-secondary {
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 0.8125rem;
+}
+
+.empty {
+  text-align: center;
+  color: var(--mat-sys-on-surface-variant);
+  padding: 32px;
+}
+
+.actions-col {
+  text-align: right;
+  white-space: nowrap;
+}
+
+// Shared dialog form layout: used by link-dialog, apikey-dialog, user-dialog.
+// Fills the dialog's own width (set per-dialog via MatDialogConfig.width, and
+// capped responsively by Material's default maxWidth on narrow viewports).
+.dialog-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding-top: 8px;
+}
+
+// Pairs related fields (e.g. username/email) on one line; wraps on narrow dialogs.
+.form-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  > mat-form-field {
+    flex: 1 1 140px;
+    min-width: 0;
+  }
+}
+
+// Angular Material v20 applies a clip-path on .mdc-notched-outline__notch that
+// clips the right side of the notch element, creating a visible gap (缺角) in
+// the outline border where the notch meets the trailing piece. The clip-path's
+// purpose is to ensure the label text doesn't bleed outside the notch when
+// floating, but it over-clips and cuts into the border itself.
+//
+// Fix: remove the clip-path entirely and let the notch render its borders
+// normally. The label's width is already constrained by max-width rules on
+// the notch, so the clip-path is not needed.
+.mat-mdc-form-field .mdc-notched-outline__notch {
+  clip-path: none !important;
+  -webkit-clip-path: none !important;
+}
+
+// Inside mat-dialog-content, the floated label sits ~2px lower than its
+// outline border line. Lift it a couple more pixels so the outline border
+// clears the label text.
+mat-dialog-content .mdc-floating-label--float-above {
+  transform: translateY(-37px) scale(0.75) !important;
+}
+

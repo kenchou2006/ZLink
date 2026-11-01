@@ -1,0 +1,30 @@
+<h2 mat-dialog-title>{{ isEdit ? ('LINKS.DIALOG_EDIT' | translate) : ('LINKS.DIALOG_CREATE' | translate) }}</h2>
+<mat-dialog-content>
+  <form [formGroup]="form" class="dialog-form">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'LINKS.DEST_URL' | translate }}</mat-label>
+      <input matInput formControlName="original_url" [placeholder]="'LINKS.DEST_PLACEHOLDER' | translate" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'LINKS.CUSTOM_ALIAS' | translate }}</mat-label>
+      <input matInput formControlName="short_code" [placeholder]="'LINKS.ALIAS_PLACEHOLDER' | translate" />
+      <mat-hint>{{ 'LINKS.ALIAS_HINT' | translate }}</mat-hint>
+    </mat-form-field>
+
+    <mat-checkbox formControlName="neverExpires" style="margin-top: 8px;">{{ 'LINKS.NEVER_EXPIRES' | translate }}</mat-checkbox>
+
+    @if (!form.controls.neverExpires.value) {
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>{{ 'LINKS.EXPIRES_AT' | translate }}</mat-label>
+        <input matInput type="datetime-local" formControlName="expiresAt" />
+      </mat-form-field>
+    }
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button [mat-dialog-close]="null">{{ 'LINKS.CANCEL' | translate }}</button>
+  <button mat-flat-button color="primary" (click)="save()" [disabled]="saving() || form.invalid">
+    {{ isEdit ? ('LINKS.SAVE' | translate) : ('LINKS.CREATE' | translate) }}
+  </button>
+</mat-dialog-actions>

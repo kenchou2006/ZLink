@@ -1,0 +1,124 @@
+<div class="page">
+  <header class="page-header">
+    <div>
+      <h1>{{ 'LINKS.TITLE' | translate }}</h1>
+      <p class="page-subtitle">{{ 'LINKS.SUBTITLE' | translate }}</p>
+    </div>
+    <div class="page-header-actions">
+      <button mat-flat-button color="primary" (click)="openCreate()">
+        <mat-icon>add</mat-icon>
+        {{ 'LINKS.NEW_LINK' | translate }}
+      </button>
+    </div>
+  </header>
+
+  <div class="table-card">
+    @if (selectedCount()) {
+      <div class="table-toolbar selection-bar">
+        <span class="selection-count">
+          {{ 'LINKS.SELECTED' | translate: { count: selectedCount() } }}
+        </span>
+        <span class="spacer"></span>
+        <button mat-button (click)="clearSelection()">
+          {{ 'LINKS.CLEAR_SELECTION' | translate }}
+        </button>
+        <button mat-flat-button color="warn" (click)="deleteSelected()">
+          <mat-icon>delete</mat-icon>
+          {{ 'LINKS.DELETE_SELECTED' | translate }}
+        </button>
+      </div>
+    } @else {
+      <div class="table-toolbar">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search">
+          <mat-label>{{ 'LINKS.SEARCH' | translate }}</mat-label>
+          <input matInput [formControl]="search" [placeholder]="'LINKS.SEARCH_PLACEHOLDER' | translate" />
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+
+        <span class="spacer"></span>
+
+        <mat-checkbox [checked]="showExpired()" (change)="toggleShowExpired($event.checked)">
+          {{ 'LINKS.SHOW_EXPIRED' | translate: { count: expiredCount() } }}
+        </mat-checkbox>
+
+        @if (showExpired() && expiredCount()) {
+          <button mat-stroked-button color="warn" (click)="clearExpired()">
+            <mat-icon>delete_sweep</mat-icon>
+            {{ 'LINKS.CLEAR_EXPIRED' | translate }}
+          </button>
+        }
+      </div>
+    }
+
+    @if (loading()) {
+      <mat-progress-bar mode="indeterminate" />
+    }
+
+    <table mat-table [dataSource]="displayed()" class="full-width">
+      <ng-container matColumnDef="select">
+        <th mat-header-cell *matHeaderCellDef class="select-col">
+          <mat-checkbox
+            [checked]="allSelected()"
+            [indeterminate]="someSelected()"
+            (change)="toggleAll()"
+          />
+        </th>
+        <td mat-cell *matCellDef="let l" class="select-col">
+          <mat-checkbox [checked]="isSelected(l.id)" (change)="toggleRow(l.id)" />
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="short_code">
+        <th mat-header-cell *matHeaderCellDef>{{ 'LINKS.COL_SHORT' | translate }}</th>
+        <td mat-cell *matCellDef="let l" class="cell-primary">
+          <a [href]="l.short_url" target="_blank" rel="noopener">{{ l.short_code }}</a>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="original_url">
+        <th mat-header-cell *matHeaderCellDef>{{ 'LINKS.COL_DEST' | translate }}</th>
+        <td mat-cell *matCellDef="let l" class="url-cell">{{ l.original_url }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="expires_at">
+        <th mat-header-cell *matHeaderCellDef>{{ 'LINKS.COL_EXPIRES' | translate }}</th>
+        <td mat-cell *matCellDef="let l" class="cell-secondary">
+          @if (!l.expires_at) {
+            {{ 'LINKS.NEVER' | translate }}
+          } @else if (l.is_expired) {
+            <span class="expired">{{ 'LINKS.EXPIRED' | translate }}</span>
+          } @else {
+            {{ l.expires_at | date: 'short' }}
+          }
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="created_at">
+        <th mat-header-cell *matHeaderCellDef>{{ 'LINKS.COL_CREATED' | translate }}</th>
+        <td mat-cell *matCellDef="let l" class="cell-secondary">{{ l.created_at | date: 'short' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef class="actions-col">{{ 'LINKS.COL_ACTIONS' | translate }}</th>
+        <td mat-cell *matCellDef="let l" class="actions-col">
+          <button mat-icon-button [matTooltip]="'LINKS.TOOLTIP_COPY' | translate" (click)="copy(l)">
+            <mat-icon>content_copy</mat-icon>
+          </button>
+          <button mat-icon-button [matTooltip]="'LINKS.TOOLTIP_EDIT' | translate" (click)="openEdit(l)">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button [matTooltip]="'LINKS.TOOLTIP_DELETE' | translate" color="warn" (click)="remove(l)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="columns"></tr>
+      <tr mat-row *matRowDef="let row; columns: columns"></tr>
+    </table>
+
+    @if (!loading() && displayed().length === 0) {
+      <p class="empty">{{ 'LINKS.NO_LINKS' | translate }}</p>
+    }
+  </div>
+</div>

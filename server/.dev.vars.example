@@ -1,0 +1,20 @@
+# Local development secrets & environment overrides (.dev.vars)
+# Copy to .dev.vars for local development: cp .dev.vars.example .dev.vars
+# NEVER commit .dev.vars to version control!
+
+ENVIRONMENT=development
+# Master secret for JWT & HKDF key derivation (at least 32 characters)
+SECRET_KEY=dev-secret-key-must-be-at-least-32-characters-long-example
+SITE_ORIGIN=http://localhost:8787
+ALLOWED_ORIGINS=http://localhost:4200,http://127.0.0.1:4200
+
+# Optional GA4 click tracking
+GA_MEASUREMENT_ID=
+GA_API_SECRET=
+
+# Seconds browsers may cache a redirect (default 0 = no-store, edits apply immediately)
+REDIRECT_CACHE_TTL=0
+
+# Optional WebAuthn override (default: hostname from request)
+WEBAUTHN_RP_ID=localhost
+WEBAUTHN_RP_NAME=ZLink

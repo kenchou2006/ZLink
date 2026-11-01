@@ -1,0 +1,36 @@
+<h2 mat-dialog-title>{{ isEdit ? ('USERS.DIALOG_EDIT' | translate) : ('USERS.DIALOG_CREATE' | translate) }}</h2>
+<mat-dialog-content>
+  <form [formGroup]="form" class="dialog-form">
+    <h3 style="margin-bottom: 4px; margin-top: 0;">{{ 'USERS.PROFILE' | translate }}</h3>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'USERS.USERNAME' | translate }}</mat-label>
+      <input matInput formControlName="username" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'USERS.EMAIL' | translate }}</mat-label>
+      <input matInput type="email" formControlName="email" />
+    </mat-form-field>
+
+    <h3 style="margin-bottom: 4px; margin-top: 8px;">{{ 'USERS.PASSWORD' | translate }}</h3>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ isEdit ? ('USERS.NEW_PASSWORD' | translate) : ('USERS.PASSWORD' | translate) }}</mat-label>
+      <input matInput type="password" formControlName="password" autocomplete="new-password" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ 'USERS.CONFIRM_PASSWORD' | translate }}</mat-label>
+      <input matInput type="password" formControlName="confirm_password" autocomplete="new-password" />
+    </mat-form-field>
+
+    @if (canEditSuperuser) {
+      <mat-checkbox formControlName="is_superuser">{{ 'USERS.SUPERUSER' | translate }}</mat-checkbox>
+    }
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button [mat-dialog-close]="null">{{ 'USERS.CANCEL' | translate }}</button>
+  <button mat-flat-button color="primary" (click)="save()" [disabled]="saving() || form.invalid">
+    {{ isEdit ? ('USERS.SAVE' | translate) : ('USERS.CREATE' | translate) }}
+  </button>
+</mat-dialog-actions>

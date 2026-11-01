@@ -1,0 +1,69 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "zlink",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // Static Assets: Angular build output is served from ../client/dist/browser.
+  // /api/* requests run Worker first.
+  // When an asset is not found (not_found_handling: none), Worker handles it (redirect or admin SPA).
+  "assets": {
+    "directory": "../client/dist/browser",
+    "binding": "ASSETS",
+    "not_found_handling": "none",
+    "run_worker_first": ["/api/*"]
+  },
+
+  // Databases: D1 for links, users, api keys, passkeys, sessions
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "zlink",
+      "migrations_dir": "src/db/migrations"
+    }
+  ],
+
+  // KV: Fast redirect cache
+  "kv_namespaces": [
+    {
+      "binding": "KV"
+    }
+  ],
+
+  // Durable Objects: Atomic rate limiting
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "RATE_LIMITER",
+        "class_name": "RateLimiter"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["RateLimiter"]
+    }
+  ],
+
+  // Cron Triggers: Clean expired links & expired api keys daily at 03:00 UTC
+  "triggers": {
+    "crons": ["0 3 * * *"]
+  },
+
+  // Environment variables (public / non-secret)
+  "vars": {
+    "ENVIRONMENT": "production",
+    "SITE_ORIGIN": "https://zlink.example.com",
+    "ALLOWED_ORIGINS": "",
+    "WEBAUTHN_RP_NAME": "ZLink",
+    "GA_MEASUREMENT_ID": ""
+  },
+
+  "observability": {
+    "logs": {
+      "enabled": true
+    }
+  }
+}

@@ -1,0 +1,122 @@
+<mat-sidenav-container class="shell">
+  <mat-sidenav
+    #sidenav
+    [mode]="isMobile() ? 'over' : 'side'"
+    [opened]="!isMobile()"
+    class="sidenav"
+  >
+    <div class="brand">
+      <span>ZLink</span>
+    </div>
+    <mat-nav-list>
+      @for (item of navItems; track item.path) {
+        <a
+          mat-list-item
+          [routerLink]="item.path"
+          routerLinkActive="active-link"
+          (click)="closeOnMobile(sidenav)"
+        >
+          <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+          <span matListItemTitle>{{ item.label | translate }}</span>
+        </a>
+      }
+
+      @if (manageItems().length) {
+        <mat-divider class="nav-divider" />
+        <a mat-list-item (click)="toggleManage()" class="group-toggle">
+          <mat-icon matListItemIcon>tune</mat-icon>
+          <span matListItemTitle>{{ 'SHELL.MANAGE' | translate }}</span>
+          <mat-icon matListItemMeta>{{ manageOpen() ? 'expand_less' : 'expand_more' }}</mat-icon>
+        </a>
+        @if (manageOpen()) {
+          @for (item of manageItems(); track item.path) {
+            <a
+              mat-list-item
+              [routerLink]="item.path"
+              routerLinkActive="active-link"
+              class="sub-item"
+              (click)="closeOnMobile(sidenav)"
+            >
+              <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+              <span matListItemTitle>{{ item.label | translate }}</span>
+            </a>
+          }
+        }
+      }
+    </mat-nav-list>
+
+
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <mat-toolbar color="primary" class="topbar">
+      @if (isMobile()) {
+        <button mat-icon-button (click)="sidenav.toggle()" [attr.aria-label]="'Toggle navigation'">
+          <mat-icon>menu</mat-icon>
+        </button>
+        <span class="brand-compact">ZLink</span>
+      }
+
+      <span class="spacer"></span>
+      <button mat-button [matMenuTriggerFor]="userMenu" class="user-menu-btn">
+        @if (user()?.avatar_url && !avatarFailed()) {
+          <img [src]="user()?.avatar_url" alt="Avatar" class="user-avatar" (error)="avatarFailed.set(true)" />
+        } @else {
+          <mat-icon>account_circle</mat-icon>
+        }
+        {{ user()?.username }}
+      </button>
+      <mat-menu #userMenu="matMenu">
+        <a mat-menu-item routerLink="/settings/profile">
+          <mat-icon>person</mat-icon>
+          <span>{{ 'SHELL.PROFILE' | translate }}</span>
+        </a>
+
+        <button mat-menu-item [matMenuTriggerFor]="themeMenu">
+          <mat-icon>{{ themeMode() === 'system' ? 'desktop_windows' : (themeMode() === 'dark' ? 'dark_mode' : 'light_mode') }}</mat-icon>
+          <span>{{ 'SHELL.THEME' | translate }}</span>
+        </button>
+
+        <button mat-menu-item [matMenuTriggerFor]="langMenu">
+          <mat-icon>language</mat-icon>
+          <span>{{ 'SHELL.LANGUAGE' | translate }}</span>
+        </button>
+
+        <button mat-menu-item (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <span>{{ 'SHELL.LOGOUT' | translate }}</span>
+        </button>
+      </mat-menu>
+
+      <mat-menu #themeMenu="matMenu">
+        <button mat-menu-item (click)="setTheme('light')">
+          <mat-icon>light_mode</mat-icon>
+          <span>{{ 'SHELL.THEME_LIGHT' | translate }}</span>
+        </button>
+        <button mat-menu-item (click)="setTheme('dark')">
+          <mat-icon>dark_mode</mat-icon>
+          <span>{{ 'SHELL.THEME_DARK' | translate }}</span>
+        </button>
+        <button mat-menu-item (click)="setTheme('system')">
+          <mat-icon>desktop_windows</mat-icon>
+          <span>{{ 'SHELL.THEME_SYSTEM' | translate }}</span>
+        </button>
+      </mat-menu>
+
+      <mat-menu #langMenu="matMenu">
+        <button mat-menu-item (click)="setLanguage('en')">
+          <mat-icon>{{ currentLang === 'en' ? 'check' : '' }}</mat-icon>
+          <span>{{ 'SHELL.LANG_EN' | translate }}</span>
+        </button>
+        <button mat-menu-item (click)="setLanguage('zh-TW')">
+          <mat-icon>{{ currentLang === 'zh-TW' ? 'check' : '' }}</mat-icon>
+          <span>{{ 'SHELL.LANG_ZH_TW' | translate }}</span>
+        </button>
+      </mat-menu>
+    </mat-toolbar>
+
+    <main>
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

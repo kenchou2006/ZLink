@@ -1,0 +1,130 @@
+<div class="page narrow">
+  <header class="page-header">
+    <div>
+      <h1>{{ 'PROFILE.TITLE' | translate }}</h1>
+      <p class="page-subtitle">{{ 'PROFILE.SUBTITLE' | translate }}</p>
+    </div>
+  </header>
+
+  <form [formGroup]="accountForm" (ngSubmit)="saveAccount()">
+    <mat-card appearance="outlined">
+      <mat-card-header><mat-card-title>{{ 'PROFILE.ACCOUNT' | translate }}</mat-card-title></mat-card-header>
+      <mat-card-content>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ 'PROFILE.USERNAME' | translate }}</mat-label>
+          <input matInput formControlName="username" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ 'PROFILE.EMAIL' | translate }}</mat-label>
+          <input matInput formControlName="email" type="email" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ 'PROFILE.AVATAR_URL' | translate }}</mat-label>
+          <input matInput formControlName="avatar_url" />
+        </mat-form-field>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button mat-flat-button color="primary" type="submit" [disabled]="savingAccount()">
+          {{ 'PROFILE.SAVE' | translate }}
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </form>
+
+  <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+    <mat-card appearance="outlined" class="mt">
+      <mat-card-header><mat-card-title>{{ 'PROFILE.CHANGE_PASSWORD' | translate }}</mat-card-title></mat-card-header>
+      <mat-card-content>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ 'PROFILE.CURRENT_PASSWORD' | translate }}</mat-label>
+          <input matInput type="password" formControlName="current_password" autocomplete="current-password" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ 'PROFILE.NEW_PASSWORD' | translate }}</mat-label>
+          <input matInput type="password" formControlName="new_password" autocomplete="new-password" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>{{ 'PROFILE.CONFIRM_NEW_PASSWORD' | translate }}</mat-label>
+          <input matInput type="password" formControlName="confirm_password" autocomplete="new-password" />
+        </mat-form-field>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button
+          mat-flat-button
+          color="primary"
+          type="submit"
+          [disabled]="savingPassword() || !passwordForm.getRawValue().new_password"
+        >
+          {{ 'PROFILE.UPDATE_PASSWORD' | translate }}
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </form>
+
+  @if (passkeys.isSupported) {
+    <mat-card appearance="outlined" class="mt">
+      <mat-card-header><mat-card-title>{{ 'PROFILE.PASSKEYS' | translate }}</mat-card-title></mat-card-header>
+      <mat-card-content>
+        <p class="hint">{{ 'PROFILE.PASSKEYS_HINT' | translate }}</p>
+
+        @if (passkeyList().length) {
+          <mat-list>
+            @for (p of passkeyList(); track p.id) {
+              <mat-list-item>
+                @if (icon(p); as iconUrl) {
+                  <img matListItemIcon [src]="iconUrl" alt="" class="passkey-icon" />
+                } @else {
+                  <mat-icon matListItemIcon>fingerprint</mat-icon>
+                }
+                <span matListItemTitle>{{ p.name }}</span>
+                <span matListItemLine class="passkey-meta">{{ providerName(p) ? providerName(p) + ' · ' : '' }}{{ 'PROFILE.CREATED' | translate: { date: (p.created_at | date: 'short') } }} · {{ p.last_used_at
+                    ? ('PROFILE.LAST_USED' | translate: { date: (p.last_used_at | date: 'short') })
+                    : ('PROFILE.NEVER_USED' | translate) }}</span>
+                <button
+                  matListItemMeta
+                  mat-icon-button
+                  [matTooltip]="'PROFILE.TOOLTIP_DELETE_PASSKEY' | translate"
+                  color="warn"
+                  (click)="removePasskey(p)"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </mat-list-item>
+            }
+          </mat-list>
+        } @else {
+          <p class="hint">{{ 'PROFILE.NO_PASSKEYS' | translate }}</p>
+        }
+
+        <div class="add-passkey-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ 'PROFILE.PASSKEY_NAME' | translate }}</mat-label>
+            <input matInput [(ngModel)]="newPasskeyName" [placeholder]="'PROFILE.PASSKEY_NAME_PLACEHOLDER' | translate" />
+          </mat-form-field>
+          <button mat-stroked-button type="button" [disabled]="addingPasskey()" (click)="addPasskey()">
+            <mat-icon>add</mat-icon>
+            {{ 'PROFILE.ADD_PASSKEY' | translate }}
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card appearance="outlined" class="mt passwordless">
+      <mat-card-header><mat-card-title>{{ 'PROFILE.PASSWORDLESS_AUTH' | translate }}</mat-card-title></mat-card-header>
+      <mat-card-content>
+        <mat-slide-toggle
+          [checked]="passwordLoginDisabled()"
+          [disabled]="togglingPasswordLogin() || (!passwordLoginDisabled() && !passkeyList().length)"
+          (change)="togglePasswordLogin($event.checked)"
+        >
+          {{ 'PROFILE.DISABLE_PASSWORD_LOGIN' | translate }}
+        </mat-slide-toggle>
+        <p class="hint">
+          {{ (passkeyList().length || passwordLoginDisabled())
+            ? ('PROFILE.DISABLE_PASSWORD_LOGIN_HINT' | translate)
+            : ('PROFILE.DISABLE_PASSWORD_LOGIN_NEEDS_PASSKEY' | translate) }}
+        </p>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

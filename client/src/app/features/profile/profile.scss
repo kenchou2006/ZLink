@@ -1,0 +1,59 @@
+.narrow {
+  max-width: 640px;
+}
+
+.mt {
+  margin-top: 24px;
+}
+
+mat-card-header {
+  margin-bottom: 16px;
+}
+
+.hint {
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 0.875rem;
+  margin: 0 0 8px;
+}
+
+mat-list-item [matListItemTitle],
+.passkey-meta {
+  text-align: left;
+}
+
+.passkey-meta {
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 0.8125rem;
+}
+
+.passkey-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.add-passkey-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 8px;
+
+  mat-form-field {
+    flex: 1;
+  }
+
+  button {
+    margin-top: 4px;
+  }
+}
+
+.passwordless {
+  .hint {
+    margin: 10px 0 0;
+  }
+
+  // Widen the gap between the switch and its label (Material's default is tight).
+  mat-slide-toggle ::ng-deep .mdc-label {
+    margin-left: 6px;
+  }
+}
